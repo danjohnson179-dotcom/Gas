@@ -1,4 +1,6 @@
 const API = "https://data.elexon.co.uk/bmrs/api/v1";
+const NESO_API = "https://api.neso.energy/api/3/action/datastore_search";
+const NESO_EMBEDDED_RESOURCE = "db6c038f-98af-4570-ab60-24d71ebd0ae5";
 const PRICES_JSON = "data/prices.json";
 
 const state = {
@@ -11,6 +13,7 @@ const state = {
   gasSource: null,
   priceUpdated: null,
   fuels: [],
+  embeddedRenewables: { windMW: 0, solarMW: 0, timestamp: null },
   updated: null
 };
 
@@ -147,6 +150,78 @@ function aggregateFuelRows(rows) {
     .sort((a, b) => b.mw - a.mw);
 }
 
+
+async function loadEmbeddedRenewables() {
+  try {
+    const url =
+      `${NESO_API}?resource_id=${encodeURIComponent(NESO_EMBEDDED_RESOURCE)}` +
+      `&limit=1000`;
+
+    const json = await getJson(url, 10000);
+    const records = json?.result?.records;
+
+    if (!Array.isArray(records) || !records.length) {
+      throw new Error("No NESO embedded generation records returned");
+    }
+
+    const now = Date.now();
+
+    const parsed = records.map((row) => {
+      const datePart = String(
+        row.DATE_GMT ||
+        row.SETTLEMENT_DATE ||
+        ""
+      ).slice(0, 10);
+
+      const timePart = String(row.TIME_GMT || "00:00").slice(0, 5);
+      const timestamp = Date.parse(`${datePart}T${timePart}:00Z`);
+
+      return {
+        timestamp,
+        windMW: Number(row.EMBEDDED_WIND_FORECAST),
+        solarMW: Number(row.EMBEDDED_SOLAR_FORECAST)
+      };
+    }).filter((row) =>
+      Number.isFinite(row.timestamp) &&
+      Number.isFinite(row.windMW) &&
+      Number.isFinite(row.solarMW)
+    );
+
+    if (!parsed.length) {
+      throw new Error("No usable NESO embedded generation values");
+    }
+
+    // Prefer the latest half-hour forecast at or before the current time.
+    // If none is available, choose the nearest upcoming observation.
+    const past = parsed
+      .filter((row) => row.timestamp <= now)
+      .sort((a, b) => b.timestamp - a.timestamp);
+
+    let selected = past[0];
+
+    if (!selected) {
+      selected = parsed
+        .slice()
+        .sort((a, b) =>
+          Math.abs(a.timestamp - now) - Math.abs(b.timestamp - now)
+        )[0];
+    }
+
+    return {
+      windMW: Math.max(0, selected.windMW),
+      solarMW: Math.max(0, selected.solarMW),
+      timestamp: new Date(selected.timestamp).toISOString()
+    };
+  } catch (error) {
+    console.warn("NESO embedded renewables unavailable", error);
+    return {
+      windMW: 0,
+      solarMW: 0,
+      timestamp: null
+    };
+  }
+}
+
 async function loadGeneration() {
   const attempts = [
     async () => rowsFrom(await getJson(`${API}/generation/outturn/current`)),
@@ -179,8 +254,37 @@ async function loadGeneration() {
 
   if (!fuels.length) throw new Error("No generation values");
 
-  state.fuels = fuels;
-  state.generationMW = state.fuels.reduce((sum, fuel) => sum + fuel.mw, 0);
+  const embedded = await loadEmbeddedRenewables();
+
+  const totals = new Map(
+    fuels.map((fuel) => [fuel.name, fuel.mw])
+  );
+
+  if (embedded.windMW > 0) {
+    totals.set(
+      "wind",
+      (totals.get("wind") || 0) + embedded.windMW
+    );
+  }
+
+  if (embedded.solarMW > 0) {
+    totals.set(
+      "solar",
+      (totals.get("solar") || 0) + embedded.solarMW
+    );
+  }
+
+  state.fuels = [...totals.entries()]
+    .map(([name, mw]) => ({ name, mw }))
+    .filter((fuel) => fuel.mw > 0)
+    .sort((a, b) => b.mw - a.mw);
+
+  state.generationMW = state.fuels.reduce(
+    (sum, fuel) => sum + fuel.mw,
+    0
+  );
+
+  state.embeddedRenewables = embedded;
 }
 
 async function loadDemand() {
@@ -347,7 +451,7 @@ function render() {
 
   byId("generationSub").textContent =
     state.generationMW
-      ? `${fmtMW(state.generationMW)} published generation`
+      ? `${fmtMW(state.generationMW)} visible supply incl. embedded renewables`
       : "Generation feed unavailable";
 
   byId("demandValue").textContent =
@@ -511,7 +615,7 @@ function answer(question) {
 
   if (/powering|generation|fuel|mix|wind|nuclear|solar/.test(q)) {
     if (!biggest || !state.generationMW) return "Generation data is unavailable.";
-    return `${displayFuelName(biggest.name)} is the largest source at about ${(biggest.mw/state.generationMW*100).toFixed(0)}%. Total displayed supply is ${fmtGW(state.generationMW)}.`;
+    return `${displayFuelName(biggest.name)} is the largest source at about ${(biggest.mw/state.generationMW*100).toFixed(0)}%. Total displayed supply including estimated embedded renewables is ${fmtGW(state.generationMW)}.`;
   }
 
   if (/demand|usage|using|high/.test(q)) {
