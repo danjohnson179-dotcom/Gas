@@ -1,9 +1,16 @@
 {
-  "name": "gb-energy-live",
+  "updated": null,
+  "currency": "GBP",
+  "displayUnit": "GBP/MWh",
   "version": "1.0.3",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "update-prices": "node scripts/update-prices.mjs"
+  "electricity": {
+    "status": "unavailable",
+    "message": "Waiting for the next successful price refresh.",
+    "source": "Elexon Insights"
+  },
+  "gas": {
+    "status": "unavailable",
+    "message": "Waiting for the next successful price refresh.",
+    "source": "National Gas Transmission REST API"
   }
 }
