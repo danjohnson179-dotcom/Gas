@@ -1,15 +1,18 @@
 {
-  "updated": null,
+  "updated": "2026-08-11T09:47:08.372Z",
   "currency": "GBP",
   "displayUnit": "GBP/MWh",
   "electricity": {
-    "status": "unavailable",
-    "message": "Waiting for the first GitHub Actions price refresh.",
-    "source": "Elexon Insights"
+    "status": "ok",
+    "gbpPerMWh": 0,
+    "originalUnit": "GBP/MWh",
+    "provider": "N2EXMIDP",
+    "source": "Elexon Insights",
+    "sourceUrl": "https://bmrs.elexon.co.uk/market-index-prices"
   },
   "gas": {
     "status": "unavailable",
-    "message": "Waiting for the first GitHub Actions price refresh.",
+    "message": "No usable National Gas pence-per-therm price was found",
     "source": "National Gas Transmission Data Portal"
   }
 }
