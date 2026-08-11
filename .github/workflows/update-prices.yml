@@ -2,6 +2,12 @@ name: Update wholesale prices
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/update-prices.mjs"
+      - ".github/workflows/update-prices.yml"
   schedule:
     - cron: "7,22,37,52 * * * *"
 
@@ -35,7 +41,6 @@ jobs:
         shell: bash
         run: |
           set -e
-
           CONTENT="$(base64 -w 0 data/prices.json)"
 
           for attempt in 1 2 3 4 5; do
@@ -55,9 +60,7 @@ jobs:
               exit 0
             fi
 
-            echo "Publish conflicted. Waiting and retrying..."
             sleep 3
           done
 
-          echo "Failed to publish prices.json after 5 attempts"
           exit 1
