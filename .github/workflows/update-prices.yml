@@ -38,17 +38,35 @@ jobs:
           git config user.name "gb-energy-live-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add data/prices.json
+          # Keep the newly generated price file safe while we sync main.
+          cp data/prices.json /tmp/prices.json
 
-          if git diff --cached --quiet; then
-            echo "No price change to commit"
-            exit 0
-          fi
+          for attempt in 1 2 3; do
+            echo "Push attempt $attempt"
 
-          git commit -m "data: refresh wholesale prices"
+            # Move the runner onto the latest version of main.
+            git fetch origin main
+            git reset --hard origin/main
 
-          # The branch may have changed while the price job was running.
-          # Rebase our one generated-data commit onto the newest main branch.
-          git pull --rebase origin main
+            # Restore the newly generated prices.
+            cp /tmp/prices.json data/prices.json
+            git add data/prices.json
 
-          git push origin HEAD:main
+            if git diff --cached --quiet; then
+              echo "No price change to commit"
+              exit 0
+            fi
+
+            git commit -m "data: refresh wholesale prices"
+
+            if git push origin HEAD:main; then
+              echo "Price update pushed successfully"
+              exit 0
+            fi
+
+            echo "Main changed again while pushing. Retrying..."
+            sleep 3
+          done
+
+          echo "Could not push after 3 attempts"
+          exit 1
