@@ -1,145 +1,676 @@
-copy">
-        <div class="live-kicker">
-          <span class="live-ring"><span></span></span>
-          <span>HOME ENERGY TOOL</span>
-        </div>
-        <h1>Estimate your home's <span class="accent-text">EPC rating.</span></h1>
-        <p>
-          Answer six simple questions and get a quick EPC-style score, likely rating band,
-          confidence level and the upgrades most likely to improve it.
-        </p>
-      </div>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Estimate your home's EPC rating with six simple questions.">
+  <title>EPC Estimate | GB Energy Live</title>
 
-      <div class="epc-progress-shell" aria-label="Estimator progress">
-        <div class="epc-progress-top">
+  <style>
+    :root {
+      --bg:#07111f;
+      --panel:#0c192a;
+      --panel-2:#102238;
+      --border:rgba(255,255,255,.09);
+      --text:#f5f8fc;
+      --muted:#91a1b7;
+      --accent:#5fe0a7;
+      --accent2:#67b7ff;
+      --warn:#ffcf66;
+      --danger:#ff8b8b;
+      --shadow:0 18px 50px rgba(0,0,0,.22);
+    }
+
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0;
+      font-family:Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 85% 5%, rgba(53,115,180,.16), transparent 28rem),
+        radial-gradient(circle at 10% 28%, rgba(42,160,115,.10), transparent 25rem),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    button,input { font:inherit; }
+    a,button { -webkit-tap-highlight-color:transparent; }
+
+    .topbar {
+      position:sticky;
+      top:0;
+      z-index:30;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      padding:14px clamp(14px,4vw,56px);
+      border-bottom:1px solid var(--border);
+      background:rgba(7,17,31,.9);
+      backdrop-filter:blur(16px);
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--text);
+      text-decoration:none;
+      font-weight:850;
+      margin-right:auto;
+    }
+
+    .brand-mark {
+      width:36px;
+      height:36px;
+      border-radius:11px;
+      display:grid;
+      place-items:center;
+      background:var(--accent);
+      color:#062017;
+    }
+
+    .brand-mark svg {
+      width:21px;
+      height:21px;
+      fill:currentColor;
+    }
+
+    .nav {
+      display:flex;
+      gap:18px;
+    }
+
+    .nav a {
+      color:var(--muted);
+      text-decoration:none;
+      font-size:14px;
+    }
+
+    .nav a.active,
+    .nav a:hover { color:var(--text); }
+
+    .back-btn {
+      text-decoration:none;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:10px;
+      font-size:13px;
+    }
+
+    .section {
+      max-width:1180px;
+      margin:0 auto;
+      padding:62px clamp(14px,4vw,34px);
+    }
+
+    .hero {
+      padding-top:66px;
+      padding-bottom:24px;
+    }
+
+    .eyebrow {
+      color:var(--accent);
+      font-size:12px;
+      font-weight:850;
+      letter-spacing:.14em;
+    }
+
+    .hero h1 {
+      margin:10px 0 18px;
+      max-width:900px;
+      font-size:clamp(46px,7vw,78px);
+      line-height:.98;
+      letter-spacing:-.055em;
+    }
+
+    .accent { color:var(--accent); }
+
+    .hero-copy {
+      max-width:720px;
+      color:var(--muted);
+      font-size:18px;
+      line-height:1.6;
+    }
+
+    .progress-wrap {
+      margin-top:30px;
+      max-width:760px;
+    }
+
+    .progress-top {
+      display:flex;
+      justify-content:space-between;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .progress-track {
+      height:8px;
+      background:rgba(255,255,255,.06);
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    .progress-track span {
+      display:block;
+      height:100%;
+      width:16.7%;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      border-radius:inherit;
+      transition:width .25s ease;
+    }
+
+    .workspace {
+      padding-top:22px;
+    }
+
+    .layout {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 320px;
+      gap:18px;
+      align-items:start;
+    }
+
+    .question-panel,
+    .preview-card,
+    .note-card,
+    .result-main,
+    .result-side {
+      border:1px solid var(--border);
+      background:rgba(12,25,42,.82);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .question-panel {
+      padding:28px;
+    }
+
+    .step {
+      display:none;
+    }
+
+    .step.active {
+      display:block;
+      animation:fadeUp .2s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(8px); }
+      to { opacity:1; transform:none; }
+    }
+
+    .step-number {
+      display:block;
+      color:rgba(95,224,167,.28);
+      font-size:44px;
+      font-weight:950;
+      letter-spacing:-.06em;
+      margin-bottom:2px;
+    }
+
+    .step h2 {
+      margin:6px 0 8px;
+      font-size:clamp(30px,4vw,46px);
+      letter-spacing:-.045em;
+    }
+
+    .step-help {
+      color:var(--muted);
+      margin:0 0 24px;
+      line-height:1.5;
+    }
+
+    .option-grid {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .choice {
+      position:relative;
+      cursor:pointer;
+    }
+
+    .choice input {
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .choice span {
+      display:block;
+      min-height:96px;
+      padding:16px;
+      border:1px solid var(--border);
+      border-radius:15px;
+      background:rgba(255,255,255,.018);
+      transition:.18s ease;
+    }
+
+    .choice strong {
+      display:block;
+      margin-bottom:6px;
+      font-size:15px;
+    }
+
+    .choice small {
+      color:var(--muted);
+      line-height:1.4;
+      font-size:12px;
+    }
+
+    .choice:hover span {
+      border-color:rgba(95,224,167,.3);
+      transform:translateY(-1px);
+    }
+
+    .choice input:checked + span {
+      border-color:rgba(95,224,167,.65);
+      background:rgba(95,224,167,.08);
+      box-shadow:inset 0 0 0 1px rgba(95,224,167,.1);
+    }
+
+    .actions {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:28px;
+      padding-top:20px;
+      border-top:1px solid var(--border);
+    }
+
+    .primary,
+    .secondary {
+      border-radius:12px;
+      padding:12px 18px;
+      font-weight:850;
+      cursor:pointer;
+    }
+
+    .primary {
+      border:0;
+      background:var(--accent);
+      color:#061a12;
+    }
+
+    .secondary {
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.02);
+      color:var(--text);
+    }
+
+    button:disabled {
+      opacity:.35;
+      cursor:not-allowed;
+    }
+
+    .side {
+      display:grid;
+      gap:14px;
+    }
+
+    .preview-card,
+    .note-card {
+      padding:20px;
+    }
+
+    .mini-scale {
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:4px;
+      margin:18px 0 16px;
+    }
+
+    .mini-scale span {
+      height:29px;
+      display:grid;
+      place-items:center;
+      border-radius:7px;
+      border:1px solid var(--border);
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .preview-band {
+      display:block;
+      font-size:66px;
+      line-height:1;
+      color:var(--accent);
+      margin-bottom:10px;
+    }
+
+    .preview-card p,
+    .note-card p {
+      color:var(--muted);
+      line-height:1.5;
+      font-size:13px;
+    }
+
+    .note-card strong {
+      display:block;
+      margin-top:8px;
+    }
+
+    .hidden { display:none !important; }
+
+    .result-shell {
+      display:grid;
+      grid-template-columns:minmax(0,1.15fr) minmax(280px,.55fr);
+      gap:16px;
+    }
+
+    .result-main,
+    .result-side {
+      padding:28px;
+    }
+
+    .result-heading {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+    }
+
+    .result-heading h2 {
+      margin:6px 0 4px;
+      font-size:38px;
+      letter-spacing:-.04em;
+    }
+
+    .result-heading p { color:var(--muted); }
+
+    .result-badge {
+      width:92px;
+      height:92px;
+      border-radius:22px;
+      display:grid;
+      place-items:center;
+      background:var(--accent);
+      color:#061a12;
+      font-size:52px;
+      font-weight:950;
+    }
+
+    .score-row {
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      margin:24px 0;
+    }
+
+    .score-row strong {
+      font-size:56px;
+      letter-spacing:-.05em;
+    }
+
+    .score-row span { color:var(--muted); }
+
+    .band-chart {
+      display:grid;
+      gap:7px;
+      margin:24px 0;
+    }
+
+    .band {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      height:35px;
+      border-radius:7px;
+      padding:0 12px;
+      opacity:.32;
+      border:1px solid var(--border);
+      transition:.2s ease;
+    }
+
+    .band.active {
+      opacity:1;
+      transform:translateX(8px);
+      box-shadow:0 0 0 2px rgba(255,255,255,.06);
+    }
+
+    .band span { font-weight:950; }
+    .band small { color:var(--muted); }
+
+    .band-a { width:48%; background:rgba(95,224,167,.13); }
+    .band-b { width:56%; background:rgba(95,224,167,.10); }
+    .band-c { width:65%; background:rgba(126,210,120,.09); }
+    .band-d { width:73%; background:rgba(255,207,102,.08); }
+    .band-e { width:81%; background:rgba(255,183,90,.08); }
+    .band-f { width:90%; background:rgba(255,139,139,.07); }
+    .band-g { width:100%; background:rgba(255,139,139,.10); }
+
+    .confidence {
+      display:flex;
+      justify-content:space-between;
+      border-top:1px solid var(--border);
+      padding-top:16px;
+      color:var(--muted);
+    }
+
+    .confidence strong { color:var(--text); }
+
+    .improvements {
+      display:grid;
+      gap:9px;
+      margin-top:16px;
+    }
+
+    .improvement {
+      padding:13px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:rgba(255,255,255,.02);
+    }
+
+    .improvement strong {
+      display:block;
+      margin-bottom:4px;
+    }
+
+    .improvement span {
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .restart {
+      width:100%;
+      margin-top:20px;
+    }
+
+    .disclaimer {
+      margin-top:14px;
+      padding:14px 16px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      background:rgba(255,255,255,.015);
+    }
+
+    footer {
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      padding:30px clamp(14px,4vw,56px);
+      border-top:1px solid var(--border);
+      color:var(--muted);
+      font-size:12px;
+      margin-top:30px;
+    }
+
+    @media (max-width:900px) {
+      .layout,
+      .result-shell { grid-template-columns:1fr; }
+      .side { grid-template-columns:1fr 1fr; }
+      .nav { display:none; }
+    }
+
+    @media (max-width:600px) {
+      .topbar { padding:12px 14px; }
+      .brand { font-size:14px; }
+      .back-btn { font-size:12px; }
+      .section { padding-left:14px; padding-right:14px; }
+      .hero { padding-top:44px; }
+      .hero h1 { font-size:46px; }
+      .question-panel { padding:18px; }
+      .option-grid { grid-template-columns:1fr; }
+      .choice span { min-height:82px; }
+      .side { grid-template-columns:1fr; }
+      .result-main,.result-side { padding:18px; }
+      .result-heading h2 { font-size:30px; }
+      .result-badge { width:72px; height:72px; font-size:42px; }
+      footer { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24"><path d="M13.2 2 5 13h6l-.8 9L19 10h-6.2l.4-8Z"/></svg>
+      </span>
+      <span>GB Energy Live</span>
+    </a>
+
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="epc.html" class="active">EPC Estimate</a>
+    </nav>
+
+    <a class="back-btn" href="index.html">Back</a>
+  </header>
+
+  <main>
+    <section class="section hero">
+      <p class="eyebrow">HOME ENERGY TOOL</p>
+      <h1>Estimate your home's <span class="accent">EPC rating.</span></h1>
+      <p class="hero-copy">
+        Answer six simple questions and get a quick EPC-style score, likely rating band,
+        confidence level and the upgrades most likely to improve it.
+      </p>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-top">
           <span id="questionCounter">Question 1 of 6</span>
           <span id="progressPercent">17%</span>
         </div>
-        <div class="epc-progress-track">
-          <span id="progressBar" style="width:16.7%"></span>
+        <div class="progress-track">
+          <span id="progressBar"></span>
         </div>
       </div>
     </section>
 
-    <section class="section epc-workspace">
-      <div class="epc-layout">
-        <div class="epc-question-panel">
+    <section class="section workspace" id="workspace">
+      <div class="layout">
+        <div class="question-panel">
           <form id="epcForm">
-            <div class="epc-step active" data-step="1">
+            <div class="step active" data-step="1">
               <span class="step-number">01</span>
               <p class="eyebrow">PROPERTY TYPE</p>
               <h2>What type of home is it?</h2>
               <p class="step-help">Homes with more exposed external walls generally lose more heat.</p>
-
               <div class="option-grid">
-                <label class="choice-card">
-                  <input type="radio" name="propertyType" value="flat">
-                  <span><strong>Flat</strong><small>Apartment or maisonette</small></span>
-                </label>
-                <label class="choice-card">
-                  <input type="radio" name="propertyType" value="terrace">
-                  <span><strong>Terraced</strong><small>Mid or end terrace</small></span>
-                </label>
-                <label class="choice-card">
-                  <input type="radio" name="propertyType" value="semi">
-                  <span><strong>Semi-detached</strong><small>One shared wall</small></span>
-                </label>
-                <label class="choice-card">
-                  <input type="radio" name="propertyType" value="detached">
-                  <span><strong>Detached</strong><small>No shared walls</small></span>
-                </label>
+                <label class="choice"><input type="radio" name="propertyType" value="flat"><span><strong>Flat</strong><small>Apartment or maisonette</small></span></label>
+                <label class="choice"><input type="radio" name="propertyType" value="terrace"><span><strong>Terraced</strong><small>Mid or end terrace</small></span></label>
+                <label class="choice"><input type="radio" name="propertyType" value="semi"><span><strong>Semi-detached</strong><small>One shared wall</small></span></label>
+                <label class="choice"><input type="radio" name="propertyType" value="detached"><span><strong>Detached</strong><small>No shared walls</small></span></label>
               </div>
             </div>
 
-            <div class="epc-step" data-step="2">
+            <div class="step" data-step="2">
               <span class="step-number">02</span>
               <p class="eyebrow">AGE</p>
               <h2>Roughly when was it built?</h2>
               <p class="step-help">Construction standards improved significantly over time.</p>
-
-              <div class="option-grid two-col">
-                <label class="choice-card"><input type="radio" name="age" value="pre1919"><span><strong>Before 1919</strong><small>Usually solid-wall construction</small></span></label>
-                <label class="choice-card"><input type="radio" name="age" value="1919_1975"><span><strong>1919-1975</strong><small>Often unfilled cavity walls</small></span></label>
-                <label class="choice-card"><input type="radio" name="age" value="1976_1990"><span><strong>1976-1990</strong><small>Improving insulation standards</small></span></label>
-                <label class="choice-card"><input type="radio" name="age" value="1991_2005"><span><strong>1991-2005</strong><small>Better thermal standards</small></span></label>
-                <label class="choice-card"><input type="radio" name="age" value="2006plus"><span><strong>2006 or newer</strong><small>Modern building regulations</small></span></label>
+              <div class="option-grid">
+                <label class="choice"><input type="radio" name="age" value="pre1919"><span><strong>Before 1919</strong><small>Usually solid-wall construction</small></span></label>
+                <label class="choice"><input type="radio" name="age" value="1919_1975"><span><strong>1919-1975</strong><small>Often unfilled cavity walls</small></span></label>
+                <label class="choice"><input type="radio" name="age" value="1976_1990"><span><strong>1976-1990</strong><small>Improving insulation standards</small></span></label>
+                <label class="choice"><input type="radio" name="age" value="1991_2005"><span><strong>1991-2005</strong><small>Better thermal standards</small></span></label>
+                <label class="choice"><input type="radio" name="age" value="2006plus"><span><strong>2006 or newer</strong><small>Modern building regulations</small></span></label>
               </div>
             </div>
 
-            <div class="epc-step" data-step="3">
+            <div class="step" data-step="3">
               <span class="step-number">03</span>
               <p class="eyebrow">WALLS</p>
               <h2>How well insulated are the walls?</h2>
               <p class="step-help">Wall insulation can make a major difference to heat loss.</p>
-
-              <div class="option-grid two-col">
-                <label class="choice-card"><input type="radio" name="walls" value="none"><span><strong>Little or none</strong><small>Uninsulated walls</small></span></label>
-                <label class="choice-card"><input type="radio" name="walls" value="unknown"><span><strong>Not sure</strong><small>We will use a neutral assumption</small></span></label>
-                <label class="choice-card"><input type="radio" name="walls" value="cavity"><span><strong>Cavity insulated</strong><small>Filled cavity wall</small></span></label>
-                <label class="choice-card"><input type="radio" name="walls" value="solid"><span><strong>Solid-wall insulated</strong><small>Internal or external insulation</small></span></label>
+              <div class="option-grid">
+                <label class="choice"><input type="radio" name="walls" value="none"><span><strong>Little or none</strong><small>Uninsulated walls</small></span></label>
+                <label class="choice"><input type="radio" name="walls" value="unknown"><span><strong>Not sure</strong><small>We will use a neutral assumption</small></span></label>
+                <label class="choice"><input type="radio" name="walls" value="cavity"><span><strong>Cavity insulated</strong><small>Filled cavity wall</small></span></label>
+                <label class="choice"><input type="radio" name="walls" value="solid"><span><strong>Solid-wall insulated</strong><small>Internal or external insulation</small></span></label>
               </div>
             </div>
 
-            <div class="epc-step" data-step="4">
+            <div class="step" data-step="4">
               <span class="step-number">04</span>
               <p class="eyebrow">ROOF</p>
               <h2>How much loft or roof insulation is there?</h2>
-              <p class="step-help">If you are unsure, choose the closest visual estimate.</p>
-
-              <div class="option-grid two-col">
-                <label class="choice-card"><input type="radio" name="loft" value="none"><span><strong>None / very little</strong><small>Less than about 50 mm</small></span></label>
-                <label class="choice-card"><input type="radio" name="loft" value="some"><span><strong>Some</strong><small>Around 50-150 mm</small></span></label>
-                <label class="choice-card"><input type="radio" name="loft" value="good"><span><strong>Good</strong><small>Around 150-270 mm</small></span></label>
-                <label class="choice-card"><input type="radio" name="loft" value="excellent"><span><strong>Excellent</strong><small>About 270 mm or more</small></span></label>
+              <p class="step-help">Choose the closest estimate.</p>
+              <div class="option-grid">
+                <label class="choice"><input type="radio" name="loft" value="none"><span><strong>None / very little</strong><small>Less than about 50 mm</small></span></label>
+                <label class="choice"><input type="radio" name="loft" value="some"><span><strong>Some</strong><small>Around 50-150 mm</small></span></label>
+                <label class="choice"><input type="radio" name="loft" value="good"><span><strong>Good</strong><small>Around 150-270 mm</small></span></label>
+                <label class="choice"><input type="radio" name="loft" value="excellent"><span><strong>Excellent</strong><small>About 270 mm or more</small></span></label>
               </div>
             </div>
 
-            <div class="epc-step" data-step="5">
+            <div class="step" data-step="5">
               <span class="step-number">05</span>
               <p class="eyebrow">WINDOWS</p>
               <h2>What glazing does the home mainly have?</h2>
               <p class="step-help">Choose the type fitted to most windows.</p>
-
               <div class="option-grid">
-                <label class="choice-card"><input type="radio" name="windows" value="single"><span><strong>Single glazed</strong><small>Older single-pane windows</small></span></label>
-                <label class="choice-card"><input type="radio" name="windows" value="mixed"><span><strong>Mixed</strong><small>Combination of single and double</small></span></label>
-                <label class="choice-card"><input type="radio" name="windows" value="double"><span><strong>Double glazed</strong><small>Most windows double glazed</small></span></label>
-                <label class="choice-card"><input type="radio" name="windows" value="triple"><span><strong>Triple glazed</strong><small>High-performance glazing</small></span></label>
+                <label class="choice"><input type="radio" name="windows" value="single"><span><strong>Single glazed</strong><small>Older single-pane windows</small></span></label>
+                <label class="choice"><input type="radio" name="windows" value="mixed"><span><strong>Mixed</strong><small>Combination of single and double</small></span></label>
+                <label class="choice"><input type="radio" name="windows" value="double"><span><strong>Double glazed</strong><small>Most windows double glazed</small></span></label>
+                <label class="choice"><input type="radio" name="windows" value="triple"><span><strong>Triple glazed</strong><small>High-performance glazing</small></span></label>
               </div>
             </div>
 
-            <div class="epc-step" data-step="6">
+            <div class="step" data-step="6">
               <span class="step-number">06</span>
               <p class="eyebrow">HEATING</p>
               <h2>What is the main heating system?</h2>
               <p class="step-help">Heating efficiency has a large influence on energy performance.</p>
-
-              <div class="option-grid two-col">
-                <label class="choice-card"><input type="radio" name="heating" value="electric"><span><strong>Electric heaters</strong><small>Panel/storage/resistance heating</small></span></label>
-                <label class="choice-card"><input type="radio" name="heating" value="oldboiler"><span><strong>Older gas boiler</strong><small>Non-condensing or 15+ years old</small></span></label>
-                <label class="choice-card"><input type="radio" name="heating" value="modernboiler"><span><strong>Modern gas boiler</strong><small>Condensing boiler</small></span></label>
-                <label class="choice-card"><input type="radio" name="heating" value="heatpump"><span><strong>Heat pump</strong><small>Air or ground source</small></span></label>
+              <div class="option-grid">
+                <label class="choice"><input type="radio" name="heating" value="electric"><span><strong>Electric heaters</strong><small>Panel, storage or resistance heating</small></span></label>
+                <label class="choice"><input type="radio" name="heating" value="oldboiler"><span><strong>Older gas boiler</strong><small>Non-condensing or 15+ years old</small></span></label>
+                <label class="choice"><input type="radio" name="heating" value="modernboiler"><span><strong>Modern gas boiler</strong><small>Condensing boiler</small></span></label>
+                <label class="choice"><input type="radio" name="heating" value="heatpump"><span><strong>Heat pump</strong><small>Air or ground source</small></span></label>
               </div>
             </div>
           </form>
 
-          <div class="epc-actions">
-            <button id="prevBtn" type="button" class="secondary-btn" disabled>Back</button>
-            <button id="nextBtn" type="button" class="primary-btn" disabled>Continue</button>
+          <div class="actions">
+            <button id="prevBtn" type="button" class="secondary" disabled>Back</button>
+            <button id="nextBtn" type="button" class="primary" disabled>Continue</button>
           </div>
         </div>
 
-        <aside class="epc-side">
-          <div class="epc-preview-card">
+        <aside class="side">
+          <div class="preview-card">
             <p class="eyebrow">LIVE ESTIMATE</p>
-            <div class="mini-epc-scale">
+            <div class="mini-scale">
               <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span>
             </div>
-            <strong id="previewBand">?</strong>
+            <strong id="previewBand" class="preview-band">?</strong>
             <p id="previewText">Answer the questions to build your estimate.</p>
           </div>
 
-          <div class="epc-note">
+          <div class="note-card">
             <strong>What this is</strong>
             <p>A quick consumer estimate based on common EPC drivers.</p>
             <strong>What this is not</strong>
@@ -149,10 +680,11 @@ copy">
       </div>
     </section>
 
-    <section id="epcResult" class="section epc-result hidden">
+    <section id="result" class="section hidden">
       <div class="result-shell">
         <div class="result-main">
           <p class="eyebrow">YOUR ESTIMATE</p>
+
           <div class="result-heading">
             <div>
               <h2>Estimated EPC rating</h2>
@@ -166,17 +698,17 @@ copy">
             <span>estimated score</span>
           </div>
 
-          <div class="epc-band-chart" aria-label="Estimated EPC band">
-            <div class="epc-band band-a"><span>A</span><small>92+</small></div>
-            <div class="epc-band band-b"><span>B</span><small>81-91</small></div>
-            <div class="epc-band band-c"><span>C</span><small>69-80</small></div>
-            <div class="epc-band band-d"><span>D</span><small>55-68</small></div>
-            <div class="epc-band band-e"><span>E</span><small>39-54</small></div>
-            <div class="epc-band band-f"><span>F</span><small>21-38</small></div>
-            <div class="epc-band band-g"><span>G</span><small>1-20</small></div>
+          <div class="band-chart">
+            <div class="band band-a"><span>A</span><small>92+</small></div>
+            <div class="band band-b"><span>B</span><small>81-91</small></div>
+            <div class="band band-c"><span>C</span><small>69-80</small></div>
+            <div class="band band-d"><span>D</span><small>55-68</small></div>
+            <div class="band band-e"><span>E</span><small>39-54</small></div>
+            <div class="band band-f"><span>F</span><small>21-38</small></div>
+            <div class="band band-g"><span>G</span><small>1-20</small></div>
           </div>
 
-          <div class="confidence-row">
+          <div class="confidence">
             <span>Estimate confidence</span>
             <strong id="confidenceValue">Medium</strong>
           </div>
@@ -185,22 +717,210 @@ copy">
         <aside class="result-side">
           <p class="eyebrow">BEST NEXT MOVES</p>
           <h3>What could improve it?</h3>
-          <div id="improvementList" class="improvement-list"></div>
-          <button id="restartBtn" type="button" class="secondary-btn full-btn">Start again</button>
+          <div id="improvements" class="improvements"></div>
+          <button id="restartBtn" type="button" class="secondary restart">Start again</button>
         </aside>
       </div>
 
-      <div class="estimate-disclaimer">
+      <div class="disclaimer">
         This tool provides a rough estimate only. An official EPC requires an accredited assessor and a full property assessment.
       </div>
     </section>
   </main>
 
   <footer>
-    <span>GB Energy Live v1.3.0</span>
-    <span>EPC Estimate - consumer guidance tool</span>
+    <span>GB Energy Live</span>
+    <span>EPC Estimate - indicative consumer tool</span>
   </footer>
 
-  <script src="epc.js?v=1.3.0"></script>
+  <script>
+    const steps = [...document.querySelectorAll(".step")];
+    const form = document.getElementById("epcForm");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const names = {
+      1:"propertyType",
+      2:"age",
+      3:"walls",
+      4:"loft",
+      5:"windows",
+      6:"heating"
+    };
+
+    let currentStep = 1;
+
+    function selected(step) {
+      return form.querySelector(`input[name="${names[step]}"]:checked`)?.value || null;
+    }
+
+    function collect() {
+      const data = {};
+      Object.values(names).forEach((name) => {
+        data[name] = form.querySelector(`input[name="${name}"]:checked`)?.value || null;
+      });
+      return data;
+    }
+
+    function updateProgress() {
+      const pct = currentStep / 6 * 100;
+      document.getElementById("questionCounter").textContent = `Question ${currentStep} of 6`;
+      document.getElementById("progressPercent").textContent = `${Math.round(pct)}%`;
+      document.getElementById("progressBar").style.width = `${pct}%`;
+
+      prevBtn.disabled = currentStep === 1;
+      nextBtn.disabled = !selected(currentStep);
+      nextBtn.textContent = currentStep === 6 ? "See my estimate" : "Continue";
+    }
+
+    function showStep(step) {
+      steps.forEach((el) => {
+        el.classList.toggle("active", Number(el.dataset.step) === step);
+      });
+      currentStep = step;
+      updateProgress();
+      updatePreview();
+      window.scrollTo({ top:0, behavior:"smooth" });
+    }
+
+    function scoreEstimate() {
+      const a = collect();
+      let score = 48;
+      let unknowns = 0;
+
+      const property = { flat:8, terrace:5, semi:2, detached:-3 };
+      const age = { pre1919:-12, "1919_1975":-7, "1976_1990":-2, "1991_2005":6, "2006plus":15 };
+      const walls = { none:-10, unknown:0, cavity:10, solid:13 };
+      const loft = { none:-9, some:-3, good:7, excellent:11 };
+      const windows = { single:-8, mixed:-3, double:7, triple:10 };
+      const heating = { electric:-5, oldboiler:-8, modernboiler:8, heatpump:15 };
+
+      score += property[a.propertyType] || 0;
+      score += age[a.age] || 0;
+      score += walls[a.walls] || 0;
+      score += loft[a.loft] || 0;
+      score += windows[a.windows] || 0;
+      score += heating[a.heating] || 0;
+
+      if (a.walls === "unknown") unknowns++;
+
+      score = Math.max(12, Math.min(96, Math.round(score)));
+      return { score, unknowns, answers:a };
+    }
+
+    function bandFor(score) {
+      if (score >= 92) return "A";
+      if (score >= 81) return "B";
+      if (score >= 69) return "C";
+      if (score >= 55) return "D";
+      if (score >= 39) return "E";
+      if (score >= 21) return "F";
+      return "G";
+    }
+
+    function updatePreview() {
+      const answers = collect();
+      const count = Object.values(answers).filter(Boolean).length;
+
+      if (!count) {
+        document.getElementById("previewBand").textContent = "?";
+        document.getElementById("previewText").textContent = "Answer the questions to build your estimate.";
+        return;
+      }
+
+      if (count < 6) {
+        document.getElementById("previewBand").textContent = "...";
+        document.getElementById("previewText").textContent = `${count} of 6 answers collected.`;
+        return;
+      }
+
+      const result = scoreEstimate();
+      document.getElementById("previewBand").textContent = bandFor(result.score);
+      document.getElementById("previewText").textContent = `Current estimate: ${result.score} points.`;
+    }
+
+    function buildImprovements(a) {
+      const items = [];
+
+      if (a.walls === "none" || a.walls === "unknown") {
+        items.push(["Improve wall insulation","Wall insulation is one of the biggest missing efficiency signals in your answers."]);
+      }
+
+      if (a.loft === "none" || a.loft === "some") {
+        items.push(["Top up loft insulation","Improving roof insulation can reduce heat loss and is often one of the simpler upgrades."]);
+      }
+
+      if (a.windows === "single" || a.windows === "mixed") {
+        items.push(["Upgrade the glazing","Modern double glazing can reduce heat loss and improve comfort."]);
+      }
+
+      if (a.heating === "oldboiler" || a.heating === "electric") {
+        items.push(["Review the heating system","A more efficient heating system could materially improve the estimated rating."]);
+      }
+
+      if (!items.length) {
+        items.push(["Look at controls and renewables","Your headline answers are already strong. Heating controls, solar and airtightness may be the next areas to investigate."]);
+      }
+
+      return items.slice(0,3);
+    }
+
+    function showResult() {
+      const result = scoreEstimate();
+      const band = bandFor(result.score);
+
+      document.getElementById("scoreValue").textContent = result.score;
+      document.getElementById("resultBadge").textContent = band;
+      document.getElementById("resultSummary").textContent = `Your six answers suggest a rating around band ${band}.`;
+      document.getElementById("confidenceValue").textContent =
+        result.unknowns ? "Low to medium" : "Medium";
+
+      document.querySelectorAll(".band").forEach((el) => {
+        el.classList.toggle("active", el.querySelector("span").textContent === band);
+      });
+
+      document.getElementById("improvements").innerHTML =
+        buildImprovements(result.answers).map(([title,copy]) => `
+          <div class="improvement">
+            <strong>${title}</strong>
+            <span>${copy}</span>
+          </div>
+        `).join("");
+
+      document.getElementById("workspace").classList.add("hidden");
+      document.getElementById("progressWrap").classList.add("hidden");
+      document.getElementById("result").classList.remove("hidden");
+      document.getElementById("result").scrollIntoView({ behavior:"smooth" });
+    }
+
+    form.addEventListener("change", () => {
+      updateProgress();
+      updatePreview();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (!selected(currentStep)) return;
+
+      if (currentStep < 6) {
+        showStep(currentStep + 1);
+      } else {
+        showResult();
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (currentStep > 1) showStep(currentStep - 1);
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      form.reset();
+      document.getElementById("result").classList.add("hidden");
+      document.getElementById("workspace").classList.remove("hidden");
+      document.getElementById("progressWrap").classList.remove("hidden");
+      showStep(1);
+    });
+
+    updateProgress();
+    updatePreview();
+  </script>
 </body>
 </html>
