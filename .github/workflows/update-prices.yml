@@ -21,11 +21,6 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install Playwright
-        run: |
-          npm install --no-save playwright@1.54.2
-          npx playwright install --with-deps chromium
-
       - name: Refresh wholesale prices
         run: node scripts/update-prices.mjs
 
