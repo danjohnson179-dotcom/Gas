@@ -1,40 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-  <title>UK Energy Grid — Live</title>
+<title>GB Energy Grid</title>
 
-  <meta name="description" content="Live Great Britain electricity demand and energy generation dashboard powered by NESO data.">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <style>
-    :root {
-      --bg: #070b12;
-      --panel: #0d131d;
-      --panel-2: #111925;
-      --border: rgba(255,255,255,0.08);
-      --text: #f4f7fb;
-      --muted: #8d99aa;
-      --green: #3ddc97;
-      --blue: #5aa9ff;
-      --yellow: #ffd166;
-      --orange: #ff9f43;
-      --purple: #a78bfa;
-      --red: #ff6b6b;
-      --cyan: #4dd0e1;
-      --shadow: 0 20px 50px rgba(0,0,0,0.25);
-    }
+<style>
+:root {
+    --bg: #070c12;
+    --panel: #0e151e;
+    --panel2: #111b24;
+    --border: rgba(255,255,255,.09);
+    --text: #f2f6fb;
+    --muted: #8c9bad;
+    --green: #39d995;
+    --green2: #1f9e6a;
+    --blue: #55a8ff;
+    --yellow: #ffd35a;
+    --orange: #ff9b54;
+    --purple: #9b8cff;
+    --red: #ff6464;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+* {
+    box-sizing: border-box;
+}
 
-    body {
-      font-family:
-        Inter,
+html {
+    background: var(--bg);
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(
+            circle at 90% 0%,
+            rgba(40,150,120,.12),
+            transparent 35%
+        ),
+        var(--bg);
+    color: var(--text);
+    font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
@@ -42,2166 +51,2050 @@
         Helvetica,
         Arial,
         sans-serif;
+    min-height: 100vh;
+}
 
-      background:
-        radial-gradient(circle at 15% 0%, rgba(61,220,151,0.08), transparent 30%),
-        radial-gradient(circle at 85% 0%, rgba(90,169,255,0.08), transparent 30%),
-        var(--bg);
+.container {
+    width: min(1180px, 100%);
+    margin: auto;
+    padding:
+        32px
+        24px
+        70px;
+}
 
-      color: var(--text);
-      min-height: 100vh;
+/* HEADER */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 34px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #173b45,
+            #10252d
+        );
+
+    border: 1px solid rgba(70,220,170,.22);
+
+    box-shadow:
+        inset 0 0 30px rgba(40,220,160,.06);
+}
+
+.brand h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 750;
+    letter-spacing: -.6px;
+}
+
+.brand p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 17px;
+}
+
+.live {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 11px 17px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(45,215,145,.08);
+
+    border: 1px solid
+        rgba(45,215,145,.28);
+
+    color: #a9eaca;
+
+    font-weight: 650;
+    letter-spacing: .4px;
+}
+
+.live-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+
+    box-shadow:
+        0 0 0 5px
+        rgba(57,217,149,.10);
+
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%,100% {
+        opacity: 1;
     }
+
+    50% {
+        opacity: .45;
+    }
+}
+
+/* MAIN DEMAND */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+
+    padding: 46px;
+
+    border-radius: 34px;
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(52,205,155,.13),
+            transparent 42%
+        ),
+        linear-gradient(
+            145deg,
+            #122029,
+            #0d141d
+        );
+
+    border: 1px solid var(--border);
+
+    box-shadow:
+        0 25px 70px
+        rgba(0,0,0,.22);
+
+    margin-bottom: 20px;
+}
+
+.hero-label {
+    color: #91a1b4;
+    font-size: 15px;
+    font-weight: 750;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+}
+
+.demand-number {
+    margin-top: 25px;
+
+    font-size: clamp(
+        74px,
+        12vw,
+        130px
+    );
+
+    line-height: .9;
+
+    font-weight: 750;
+    letter-spacing: -5px;
+}
+
+.demand-number span {
+    font-size: .38em;
+    color: #94a3b6;
+    font-weight: 450;
+    letter-spacing: -1px;
+}
+
+.timestamp {
+    margin-top: 22px;
+    color: #94a3b6;
+    font-size: 18px;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    margin-top: 25px;
+
+    padding: 11px 17px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(255,255,255,.045);
+
+    color: #dce4ed;
+}
+
+.status-pill .dot {
+    width: 9px;
+    height: 9px;
+    background: var(--green);
+    border-radius: 50%;
+}
+
+/* GRID */
+
+.cards {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0,1fr));
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+}
+
+.card {
+    padding: 30px;
+
+    border-radius: 27px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #101821,
+            #0c121a
+        );
+
+    border: 1px solid var(--border);
+
+    min-height: 150px;
+}
+
+.card-label {
+    color: #91a0b3;
+    font-size: 18px;
+}
+
+.card-value {
+    margin-top: 20px;
+
+    font-size: 43px;
+    font-weight: 720;
+    letter-spacing: -1.5px;
+}
+
+.card-unit {
+    margin-top: 7px;
+    color: #8492a4;
+    font-size: 16px;
+}
+
+/* CHART */
+
+.chart-card {
+    padding: 30px;
+
+    border-radius: 29px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #0f161f,
+            #0b1017
+        );
+
+    border: 1px solid var(--border);
+
+    margin-bottom: 20px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+
+    margin-bottom: 25px;
+}
+
+.chart-title {
+    font-size: 25px;
+    font-weight: 750;
+}
+
+.chart-subtitle {
+    margin-top: 6px;
+    color: #8c99aa;
+    font-size: 16px;
+}
+
+.range-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.range-btn {
+    border: 1px solid var(--border);
+
+    background:
+        rgba(255,255,255,.025);
+
+    color: #8795a7;
+
+    padding: 10px 16px;
+
+    border-radius: 13px;
+
+    font-size: 15px;
+
+    cursor: pointer;
+}
+
+.range-btn.active {
+    color: white;
+
+    background:
+        rgba(255,255,255,.09);
+
+    border-color:
+        rgba(255,255,255,.14);
+}
+
+.chart-wrap {
+    position: relative;
+    height: 340px;
+}
+
+/* MIX */
+
+.mix-card {
+    padding: 30px;
+
+    border-radius: 29px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #0f161f,
+            #0b1017
+        );
+
+    border: 1px solid var(--border);
+}
+
+.section-title {
+    font-size: 25px;
+    font-weight: 750;
+}
+
+.section-subtitle {
+    color: #8997a8;
+    margin-top: 6px;
+    margin-bottom: 28px;
+}
+
+.mix-row {
+    margin-bottom: 21px;
+}
+
+.mix-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.mix-name {
+    color: #dce3ec;
+}
+
+.mix-number {
+    color: #91a0b1;
+}
+
+.bar {
+    height: 8px;
+    background:
+        rgba(255,255,255,.055);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    transition: width .8s ease;
+    background: var(--green);
+}
+
+.bar-wind {
+    background: #55a8ff;
+}
+
+.bar-solar {
+    background: #ffd35a;
+}
+
+.bar-gas {
+    background: #ff9b54;
+}
+
+.bar-nuclear {
+    background: #b28cff;
+}
+
+.bar-hydro {
+    background: #4fd1c5;
+}
+
+.bar-other {
+    background: #8b98a8;
+}
+
+/* FOOTER */
+
+.footer {
+    text-align: center;
+
+    margin-top: 28px;
+
+    color: #667487;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+.footer a {
+    color: #7e91a8;
+}
+
+/* ERROR */
+
+.error {
+    color: #ff8a8a;
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
 
     .container {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 28px 0 50px;
+        padding:
+            25px
+            20px
+            60px;
     }
 
-    /* HEADER */
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      margin-bottom: 28px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    .header {
+        align-items: flex-start;
     }
 
     .logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-
-      background:
-        linear-gradient(135deg, rgba(61,220,151,0.2), rgba(90,169,255,0.18));
-
-      border: 1px solid var(--border);
-      font-size: 23px;
+        width: 58px;
+        height: 58px;
+        border-radius: 19px;
     }
 
     .brand h1 {
-      font-size: 21px;
-      letter-spacing: -0.5px;
+        font-size: 25px;
     }
 
     .brand p {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 3px;
+        font-size: 15px;
     }
 
-    .live-status {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-
-      padding: 9px 13px;
-      border-radius: 999px;
-
-      background: rgba(61,220,151,0.08);
-      border: 1px solid rgba(61,220,151,0.18);
-
-      color: #bff5dc;
-      font-size: 13px;
-      font-weight: 600;
+    .live {
+        padding: 9px 12px;
+        font-size: 13px;
     }
-
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--green);
-      border-radius: 50%;
-      box-shadow: 0 0 12px var(--green);
-      animation: pulse 1.8s infinite;
-    }
-
-    @keyframes pulse {
-      0%,100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* HERO */
 
     .hero {
-      display: grid;
-      grid-template-columns: 1.45fr 1fr;
-      gap: 18px;
-      margin-bottom: 18px;
+        padding: 35px 28px;
+        border-radius: 29px;
     }
 
-    .hero-card,
+    .demand-number {
+        font-size: 76px;
+    }
+
+    .cards {
+        gap: 14px;
+    }
+
     .card {
-      background: linear-gradient(
-        145deg,
-        rgba(255,255,255,0.035),
-        rgba(255,255,255,0.018)
-      );
-
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
+        padding: 22px;
+        min-height: 145px;
     }
 
-    .hero-card {
-      padding: 28px;
-      min-height: 250px;
-      position: relative;
-      overflow: hidden;
+    .card-label {
+        font-size: 15px;
     }
 
-    .hero-card::after {
-      content: "";
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      right: -130px;
-      top: -130px;
-
-      background: radial-gradient(
-        circle,
-        rgba(61,220,151,0.13),
-        transparent 70%
-      );
-      pointer-events: none;
+    .card-value {
+        font-size: 34px;
     }
 
-    .eyebrow {
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      margin-bottom: 13px;
+    .chart-card,
+    .mix-card {
+        padding: 23px;
     }
 
-    .demand-value {
-      font-size: clamp(54px, 8vw, 88px);
-      font-weight: 750;
-      line-height: 0.95;
-      letter-spacing: -4px;
+    .chart-header {
+        flex-direction: column;
     }
 
-    .demand-unit {
-      font-size: 18px;
-      color: var(--muted);
-      margin-left: 7px;
-      letter-spacing: 0;
-    }
-
-    .demand-sub {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .trend {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      margin-top: 16px;
-
-      padding: 7px 10px;
-      border-radius: 8px;
-
-      background: rgba(255,255,255,0.04);
-      font-size: 12px;
-    }
-
-    /* STATS */
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .stat {
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 116px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .stat-value {
-      font-size: 28px;
-      font-weight: 700;
-      margin-top: 10px;
-      letter-spacing: -1px;
-    }
-
-    .stat-small {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 5px;
-    }
-
-    /* CHART */
-
-    .chart-card {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .card-description {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 5px;
-    }
-
-    .chart-controls {
-      display: flex;
-      gap: 6px;
+    .range-buttons {
+        width: 100%;
     }
 
     .range-btn {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03);
-      color: var(--muted);
-      padding: 7px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 11px;
-    }
-
-    .range-btn.active,
-    .range-btn:hover {
-      background: rgba(255,255,255,0.08);
-      color: white;
+        flex: 1;
     }
 
     .chart-wrap {
-      position: relative;
-      height: 330px;
+        height: 280px;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .cards {
+        grid-template-columns: 1fr 1fr;
     }
 
-    canvas {
-      width: 100% !important;
-      height: 100% !important;
+    .brand {
+        gap: 10px;
     }
 
-    /* GENERATION */
-
-    .generation-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin-bottom: 18px;
+    .brand h1 {
+        font-size: 22px;
     }
 
-    .generation-card {
-      padding: 24px;
+    .brand p {
+        font-size: 13px;
     }
 
-    .generation-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+    .live {
+        font-size: 0;
+        padding: 13px;
     }
 
-    .generation-row {
-      display: grid;
-      grid-template-columns: 105px 1fr 60px;
-      gap: 12px;
-      align-items: center;
+    .live-dot {
+        margin: 0;
     }
-
-    .generation-name {
-      font-size: 12px;
-      color: #cbd3df;
-    }
-
-    .bar {
-      height: 7px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .bar-inner {
-      height: 100%;
-      border-radius: inherit;
-      transition: width 0.8s ease;
-    }
-
-    .generation-number {
-      text-align: right;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    /* ENERGY COLOUR CLASSES */
-
-    .wind {
-      background: var(--green);
-    }
-
-    .solar {
-      background: var(--yellow);
-    }
-
-    .gas {
-      background: var(--orange);
-    }
-
-    .nuclear {
-      background: var(--purple);
-    }
-
-    .hydro {
-      background: var(--cyan);
-    }
-
-    .other {
-      background: var(--blue);
-    }
-
-    /* RENEWABLE CARD */
-
-    .renewable-card {
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      gap: 28px;
-    }
-
-    .ring {
-      width: 145px;
-      height: 145px;
-      border-radius: 50%;
-
-      display: grid;
-      place-items: center;
-
-      background:
-        radial-gradient(circle at center, var(--panel) 58%, transparent 59%),
-        conic-gradient(var(--green) 0deg, var(--green) 0deg, rgba(255,255,255,0.06) 0deg);
-    }
-
-    .ring-value {
-      text-align: center;
-    }
-
-    .ring-value strong {
-      display: block;
-      font-size: 31px;
-    }
-
-    .ring-value span {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .renewable-info h3 {
-      font-size: 17px;
-      margin-bottom: 8px;
-    }
-
-    .renewable-info p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    /* FOOTER */
-
-    footer {
-      margin-top: 25px;
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    footer a {
-      color: #a9cfff;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* LOADING */
-
-    .loading {
-      opacity: 0.55;
-    }
-
-    .error {
-      color: var(--red);
-      font-size: 12px;
-      margin-top: 10px;
-    }
-
-    /* MOBILE */
-
-    @media (max-width: 800px) {
-
-      .container {
-        width: min(100% - 20px, 700px);
-        padding-top: 18px;
-      }
-
-      header {
-        align-items: flex-start;
-      }
-
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .generation-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .chart-card {
-        padding: 18px;
-      }
-
-      .chart-wrap {
-        height: 270px;
-      }
-
-      .demand-value {
-        font-size: 64px;
-      }
-
-      footer {
-        flex-direction: column;
-      }
-    }
-
-    @media (max-width: 500px) {
-
-      .brand h1 {
-        font-size: 18px;
-      }
-
-      .live-status {
-        font-size: 11px;
-        padding: 7px 9px;
-      }
-
-      .logo {
-        width: 40px;
-        height: 40px;
-      }
-
-      .hero-card {
-        padding: 22px;
-      }
-
-      .stat {
-        padding: 17px;
-      }
-
-      .stat-value {
-        font-size: 23px;
-      }
-
-      .generation-row {
-        grid-template-columns: 75px 1fr 52px;
-      }
-
-      .renewable-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .ring {
-        width: 130px;
-        height: 130px;
-      }
-    }
-  </style>
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-  <header>
+    <!-- HEADER -->
 
-    <div class="brand">
-      <div class="logo">⚡</div>
+    <header class="header">
 
-      <div>
-        <h1>UK Energy Grid</h1>
-        <p>Great Britain electricity system</p>
-      </div>
-    </div>
+        <div class="brand">
 
-    <div class="live-status">
-      <span class="live-dot"></span>
-      LIVE DATA
-    </div>
-
-  </header>
-
-
-  <!-- TOP SECTION -->
-
-  <section class="hero">
-
-    <div class="hero-card">
-
-      <div class="eyebrow">
-        Current electricity demand
-      </div>
-
-      <div>
-        <span class="demand-value" id="currentDemand">
-          —
-        </span>
-
-        <span class="demand-unit">
-          GW
-        </span>
-      </div>
-
-      <div class="demand-sub" id="timestamp">
-        Waiting for NESO data…
-      </div>
-
-      <div class="trend" id="trend">
-        <span>●</span>
-        Loading
-      </div>
-
-    </div>
-
-
-    <div class="stat-grid">
-
-      <div class="card stat">
-        <div class="stat-label">
-          Wind generation
-        </div>
-
-        <div class="stat-value" id="windValue">
-          —
-        </div>
-
-        <div class="stat-small">
-          GW
-        </div>
-      </div>
-
-
-      <div class="card stat">
-        <div class="stat-label">
-          Solar generation
-        </div>
-
-        <div class="stat-value" id="solarValue">
-          —
-        </div>
-
-        <div class="stat-small">
-          GW
-        </div>
-      </div>
-
-
-      <div class="card stat">
-        <div class="stat-label">
-          Renewable share
-        </div>
-
-        <div class="stat-value" id="renewableValue">
-          —
-        </div>
-
-        <div class="stat-small">
-          of demand
-        </div>
-      </div>
-
-
-      <div class="card stat">
-        <div class="stat-label">
-          Today's peak
-        </div>
-
-        <div class="stat-value" id="peakValue">
-          —
-        </div>
-
-        <div class="stat-small">
-          GW
-        </div>
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- DEMAND CHART -->
-
-  <section class="card chart-card">
-
-    <div class="card-header">
-
-      <div>
-        <div class="card-title">
-          Electricity demand
-        </div>
-
-        <div class="card-description">
-          National demand throughout today
-        </div>
-      </div>
-
-      <div class="chart-controls">
-
-        <button class="range-btn active" data-hours="6">
-          6h
-        </button>
-
-        <button class="range-btn" data-hours="12">
-          12h
-        </button>
-
-        <button class="range-btn" data-hours="24">
-          24h
-        </button>
-
-      </div>
-
-    </div>
-
-    <div class="chart-wrap">
-      <canvas id="demandChart"></canvas>
-    </div>
-
-  </section>
-
-
-  <!-- GENERATION -->
-
-  <section class="generation-grid">
-
-    <div class="card generation-card">
-
-      <div class="card-header">
-
-        <div>
-          <div class="card-title">
-            Generation mix
-          </div>
-
-          <div class="card-description">
-            Available outturn data
-          </div>
-        </div>
-
-      </div>
-
-      <div class="generation-list">
-
-        <div class="generation-row">
-
-          <div class="generation-name">
-            Wind
-          </div>
-
-          <div class="bar">
-            <div
-              class="bar-inner wind"
-              id="windBar"
-              style="width:0%">
+            <div class="logo">
+                ⚡
             </div>
-          </div>
 
-          <div
-            class="generation-number"
-            id="windMix"
-          >
-            —
-          </div>
+            <div>
+                <h1>GB Energy Grid</h1>
+                <p>Live Great Britain electricity system</p>
+            </div>
 
         </div>
 
+        <div class="live">
+            <span class="live-dot"></span>
+            <span>LIVE DATA</span>
+        </div>
 
-        <div class="generation-row">
+    </header>
 
-          <div class="generation-name">
-            Solar
-          </div>
 
-          <div class="bar">
+    <!-- CURRENT DEMAND -->
+
+    <section class="hero">
+
+        <div class="hero-label">
+            Current electricity demand
+        </div>
+
+        <div class="demand-number">
+            <span id="currentDemand">—</span>
+            <span>GW</span>
+        </div>
+
+        <div
+            class="timestamp"
+            id="timestamp"
+        >
+            Connecting to live grid data…
+        </div>
+
+        <div class="status-pill">
+
+            <span class="dot"></span>
+
+            <span id="trend">
+                Connecting…
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- STAT CARDS -->
+
+    <section class="cards">
+
+        <div class="card">
+
+            <div class="card-label">
+                Wind generation
+            </div>
+
             <div
-              class="bar-inner solar"
-              id="solarBar"
-              style="width:0%"
-            ></div>
-          </div>
+                class="card-value"
+                id="windValue"
+            >
+                —
+            </div>
 
-          <div
-            class="generation-number"
-            id="solarMix"
-          >
-            —
-          </div>
+            <div class="card-unit">
+                GW
+            </div>
 
         </div>
 
 
-        <div class="generation-row">
+        <div class="card">
 
-          <div class="generation-name">
-            Gas
-          </div>
+            <div class="card-label">
+                Solar generation
+            </div>
 
-          <div class="bar">
             <div
-              class="bar-inner gas"
-              id="gasBar"
-              style="width:0%"
-            ></div>
-          </div>
+                class="card-value"
+                id="solarValue"
+            >
+                —
+            </div>
 
-          <div
-            class="generation-number"
-            id="gasMix"
-          >
-            —
-          </div>
+            <div class="card-unit">
+                GW
+            </div>
 
         </div>
 
 
-        <div class="generation-row">
+        <div class="card">
 
-          <div class="generation-name">
-            Nuclear
-          </div>
+            <div class="card-label">
+                Renewable share
+            </div>
 
-          <div class="bar">
             <div
-              class="bar-inner nuclear"
-              id="nuclearBar"
-              style="width:0%"
-            ></div>
-          </div>
+                class="card-value"
+                id="renewableValue"
+            >
+                —
+            </div>
 
-          <div
-            class="generation-number"
-            id="nuclearMix"
-          >
-            —
-          </div>
+            <div class="card-unit">
+                of demand
+            </div>
 
         </div>
 
 
-        <div class="generation-row">
+        <div class="card">
 
-          <div class="generation-name">
-            Hydro
-          </div>
+            <div class="card-label">
+                Today's peak
+            </div>
 
-          <div class="bar">
             <div
-              class="bar-inner hydro"
-              id="hydroBar"
-              style="width:0%"
-            ></div>
-          </div>
+                class="card-value"
+                id="peakValue"
+            >
+                —
+            </div>
 
-          <div
-            class="generation-number"
-            id="hydroMix"
-          >
-            —
-          </div>
+            <div class="card-unit">
+                GW
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- DEMAND CHART -->
+
+    <section class="chart-card">
+
+        <div class="chart-header">
+
+            <div>
+
+                <div class="chart-title">
+                    Electricity demand
+                </div>
+
+                <div class="chart-subtitle">
+                    National demand throughout the day
+                </div>
+
+            </div>
+
+
+            <div class="range-buttons">
+
+                <button
+                    class="range-btn active"
+                    data-hours="6"
+                >
+                    6h
+                </button>
+
+                <button
+                    class="range-btn"
+                    data-hours="12"
+                >
+                    12h
+                </button>
+
+                <button
+                    class="range-btn"
+                    data-hours="24"
+                >
+                    24h
+                </button>
+
+            </div>
 
         </div>
 
 
-        <div class="generation-row">
+        <div class="chart-wrap">
 
-          <div class="generation-name">
-            Other
-          </div>
-
-          <div class="bar">
-            <div
-              class="bar-inner other"
-              id="otherBar"
-              style="width:0%"
-            ></div>
-          </div>
-
-          <div
-            class="generation-number"
-            id="otherMix"
-          >
-            —
-          </div>
+            <canvas id="demandChart"></canvas>
 
         </div>
 
-      </div>
-
-    </div>
+    </section>
 
 
-    <!-- RENEWABLE CARD -->
+    <!-- GENERATION MIX -->
 
-    <div class="card renewable-card">
+    <section class="mix-card">
 
-      <div class="ring" id="renewableRing">
+        <div class="section-title">
+            Generation mix
+        </div>
 
-        <div class="ring-value">
+        <div class="section-subtitle">
+            Current generation by source
+        </div>
 
-          <strong id="ringValue">
-            —
-          </strong>
 
-          <span>
-            renewable
-          </span>
+        <div class="mix-row">
+
+            <div class="mix-top">
+
+                <span class="mix-name">
+                    Wind
+                </span>
+
+                <span
+                    class="mix-number"
+                    id="windMix"
+                >
+                    —
+                </span>
+
+            </div>
+
+            <div class="bar">
+                <div
+                    id="windBar"
+                    class="bar-fill bar-wind"
+                ></div>
+            </div>
 
         </div>
 
-      </div>
+
+        <div class="mix-row">
+
+            <div class="mix-top">
+
+                <span class="mix-name">
+                    Solar
+                </span>
+
+                <span
+                    class="mix-number"
+                    id="solarMix"
+                >
+                    —
+                </span>
+
+            </div>
+
+            <div class="bar">
+                <div
+                    id="solarBar"
+                    class="bar-fill bar-solar"
+                ></div>
+            </div>
+
+        </div>
 
 
-      <div class="renewable-info">
+        <div class="mix-row">
 
-        <h3>
-          Renewable generation
-        </h3>
+            <div class="mix-top">
 
-        <p>
-          Wind, solar and hydro generation as a
-          proportion of current electricity demand.
-        </p>
+                <span class="mix-name">
+                    Gas
+                </span>
 
+                <span
+                    class="mix-number"
+                    id="gasMix"
+                >
+                    —
+                </span>
+
+            </div>
+
+            <div class="bar">
+                <div
+                    id="gasBar"
+                    class="bar-fill bar-gas"
+                ></div>
+            </div>
+
+        </div>
+
+
+        <div class="mix-row">
+
+            <div class="mix-top">
+
+                <span class="mix-name">
+                    Nuclear
+                </span>
+
+                <span
+                    class="mix-number"
+                    id="nuclearMix"
+                >
+                    —
+                </span>
+
+            </div>
+
+            <div class="bar">
+                <div
+                    id="nuclearBar"
+                    class="bar-fill bar-nuclear"
+                ></div>
+            </div>
+
+        </div>
+
+
+        <div class="mix-row">
+
+            <div class="mix-top">
+
+                <span class="mix-name">
+                    Hydro
+                </span>
+
+                <span
+                    class="mix-number"
+                    id="hydroMix"
+                >
+                    —
+                </span>
+
+            </div>
+
+            <div class="bar">
+                <div
+                    id="hydroBar"
+                    class="bar-fill bar-hydro"
+                ></div>
+            </div>
+
+        </div>
+
+
+        <div class="mix-row">
+
+            <div class="mix-top">
+
+                <span class="mix-name">
+                    Other
+                </span>
+
+                <span
+                    class="mix-number"
+                    id="otherMix"
+                >
+                    —
+                </span>
+
+            </div>
+
+            <div class="bar">
+                <div
+                    id="otherBar"
+                    class="bar-fill bar-other"
+                ></div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div
+        class="footer"
+        id="dataStatus"
+    >
+        Connecting to Elexon live data…
         <br>
-
-        <p id="dataStatus">
-          Connecting to NESO…
-        </p>
-
-      </div>
-
+        Data supplied by Elexon Insights / BMRS.
     </div>
-
-  </section>
-
-
-  <footer>
-
-    <div>
-      Data supplied by
-      <a
-        href="https://www.neso.energy/"
-        target="_blank"
-        rel="noopener"
-      >
-        National Energy System Operator
-      </a>.
-    </div>
-
-    <div>
-      Auto-refresh: every 5 minutes
-    </div>
-
-  </footer>
 
 </div>
 
 
-<!-- CHART.JS -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-
-
 <script>
 
-  /*
-   * ============================================================
-   * NESO LIVE ENERGY DASHBOARD
-   * ============================================================
-   *
-   * The site uses NESO's public CKAN Data API.
-   *
-   * No API key is required.
-   *
-   * Main dataset:
-   * Daily Demand Update
-   *
-   * Resource:
-   * 177f6fa4-ae49-4182-81ea-0c6b35f26ca6
-   *
-   * ============================================================
-   */
+/* =========================================================
+   GB ENERGY GRID
+   LIVE ELEXON DATA
+   ========================================================= */
 
+const ELEXON =
+    "https://data.elexon.co.uk/bmrs/api/v1";
 
-  const API_BASE =
-    "https://api.neso.energy/api/3/action/datastore_search";
-
-
-  const RESOURCE_ID =
-    "177f6fa4-ae49-4182-81ea-0c6b35f26ca6";
-
-
-  const REFRESH_INTERVAL =
+const REFRESH_INTERVAL =
     5 * 60 * 1000;
 
+let demandData = [];
 
-  let allData = [];
+let currentHours = 6;
 
-  let currentHours = 6;
+let demandChart = null;
 
-  let demandChart = null;
 
+/* =========================================================
+   FETCH JSON
+   ========================================================= */
 
-  /*
-   * ------------------------------------------------------------
-   * HELPERS
-   * ------------------------------------------------------------
-   */
-
-  function number(value) {
-
-    if (
-      value === null ||
-      value === undefined ||
-      value === "" ||
-      isNaN(Number(value))
-    ) {
-      return null;
-    }
-
-    return Number(value);
-
-  }
-
-
-  function gw(value) {
-
-    if (value === null || value === undefined) {
-      return "—";
-    }
-
-    return (
-      Number(value) / 1000
-    ).toFixed(2);
-
-  }
-
-
-  function formatTime(value) {
-
-    if (!value) {
-      return "Unknown time";
-    }
-
-    const date = new Date(value);
-
-    if (isNaN(date.getTime())) {
-      return value;
-    }
-
-    return date.toLocaleTimeString(
-      "en-GB",
-      {
-        hour: "2-digit",
-        minute: "2-digit"
-      }
-    );
-
-  }
-
-
-  function findField(row, possibleNames) {
-
-    const keys =
-      Object.keys(row);
-
-    for (const name of possibleNames) {
-
-      const exact =
-        keys.find(
-          key =>
-            key.toLowerCase() ===
-            name.toLowerCase()
-        );
-
-      if (exact) {
-        return number(row[exact]);
-      }
-
-    }
-
-
-    /*
-     * If an exact match doesn't exist,
-     * try partial matching.
-     */
-
-    for (const name of possibleNames) {
-
-      const partial =
-        keys.find(
-          key =>
-            key
-              .toLowerCase()
-              .includes(
-                name.toLowerCase()
-              )
-        );
-
-      if (partial) {
-        const result =
-          number(row[partial]);
-
-        if (result !== null) {
-          return result;
-        }
-      }
-
-    }
-
-    return null;
-
-  }
-
-
-  function getDateValue(row) {
-
-    const possible =
-      [
-        "GDATETIME",
-        "DATETIME",
-        "DateTime",
-        "SETTLEMENT_DATE",
-        "DATE"
-      ];
-
-    for (const field of possible) {
-
-      const value =
-        row[field];
-
-      if (value) {
-
-        const parsed =
-          new Date(value);
-
-        if (!isNaN(parsed.getTime())) {
-          return parsed;
-        }
-
-      }
-
-    }
-
-    /*
-     * Some NESO datasets store
-     * DATE and CTIME separately.
-     */
-
-    if (row.DATE) {
-
-      const dateString =
-        String(row.DATE);
-
-      let clock =
-        row.CTIME ??
-        row.TIME ??
-        null;
-
-      if (clock !== null) {
-
-        clock =
-          String(clock)
-            .padStart(4, "0");
-
-        const hours =
-          clock.substring(0, 2);
-
-        const minutes =
-          clock.substring(2, 4);
-
-        const parsed =
-          new Date(
-            `${dateString}T${hours}:${minutes}:00`
-          );
-
-        if (!isNaN(parsed.getTime())) {
-          return parsed;
-        }
-
-      }
-
-    }
-
-    return null;
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * GET NESO DATA
-   * ------------------------------------------------------------
-   */
-
-  async function fetchNESO() {
-
-    const url =
-      `${API_BASE}` +
-      `?resource_id=${RESOURCE_ID}` +
-      `&limit=5000`;
-
+async function getJSON(url) {
 
     const response =
-      await fetch(url, {
-        cache: "no-store"
-      });
-
+        await fetch(
+            url,
+            {
+                cache: "no-store"
+            }
+        );
 
     if (!response.ok) {
 
-      throw new Error(
-        `NESO API returned ${response.status}`
-      );
-
-    }
-
-
-    const json =
-      await response.json();
-
-
-    if (
-      !json.success ||
-      !json.result ||
-      !json.result.records
-    ) {
-
-      throw new Error(
-        "Unexpected NESO API response"
-      );
-
-    }
-
-
-    return json.result.records;
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * NORMALISE DATA
-   * ------------------------------------------------------------
-   */
-
-  function normaliseData(records) {
-
-    const result = [];
-
-
-    for (const row of records) {
-
-      const date =
-        getDateValue(row);
-
-
-      if (!date) {
-        continue;
-      }
-
-
-      const demand =
-        findField(
-          row,
-          [
-            "ND",
-            "NATIONALDEMAND",
-            "NATIONAL_DEMAND",
-            "TOTALSYSTEMDEMAND",
-            "TSD"
-          ]
+        throw new Error(
+            `HTTP ${response.status}`
         );
 
-
-      const wind =
-        findField(
-          row,
-          [
-            "WIND",
-            "WIND_GENERATION",
-            "EMBEDDEDWIND"
-          ]
-        );
-
-
-      const solar =
-        findField(
-          row,
-          [
-            "SOLAR",
-            "SOLAR_GENERATION",
-            "EMBEDDEDSOLAR"
-          ]
-        );
-
-
-      result.push({
-
-        date,
-
-        demand,
-
-        wind,
-
-        solar,
-
-        raw: row
-
-      });
-
     }
 
-
-    result.sort(
-      (a, b) =>
-        a.date - b.date
-    );
+    return await response.json();
+}
 
 
-    return result;
+/* =========================================================
+   GET DEMAND
+   ========================================================= */
 
-  }
+async function getDemand() {
+
+    const now =
+        new Date();
+
+    const yesterday =
+        new Date(
+            now.getTime()
+            -
+            24 * 60 * 60 * 1000
+        );
+
+    const from =
+        yesterday.toISOString();
+
+    const to =
+        now.toISOString();
+
+    const url =
+        ELEXON +
+        "/datasets/INDO" +
+        "?publishDateTimeFrom=" +
+        encodeURIComponent(from) +
+        "&publishDateTimeTo=" +
+        encodeURIComponent(to) +
+        "&format=json";
+
+    const result =
+        await getJSON(url);
+
+    const rows =
+        Array.isArray(result)
+            ? result
+            : result.data || [];
+
+    return rows
+
+        .map(row => {
+
+            return {
+
+                date:
+                    new Date(
+                        row.startTime ||
+                        row.publishTime
+                    ),
+
+                demand:
+                    Number(
+                        row.demand
+                    )
+
+            };
+
+        })
+
+        .filter(row => {
+
+            return (
+                !isNaN(
+                    row.date.getTime()
+                )
+                &&
+                Number.isFinite(
+                    row.demand
+                )
+                &&
+                row.demand > 0
+            );
+
+        })
+
+        .sort(
+            (a,b) =>
+                a.date - b.date
+        );
+
+}
 
 
-  /*
-   * ------------------------------------------------------------
-   * FIND LATEST DATA
-   * ------------------------------------------------------------
-   */
+/* =========================================================
+   GET GENERATION
+   ========================================================= */
 
-  function getLatest(data) {
+async function getGeneration() {
 
-    const valid =
-      data.filter(
-        x =>
-          x.demand !== null
-      );
+    const url =
+        ELEXON +
+        "/generation/actual/per-type/day-total" +
+        "?format=json";
 
-    if (!valid.length) {
-      return null;
-    }
+    return await getJSON(url);
 
-    return valid[
-      valid.length - 1
-    ];
-
-  }
+}
 
 
-  /*
-   * ------------------------------------------------------------
-   * UPDATE DASHBOARD
-   * ------------------------------------------------------------
-   */
+/* =========================================================
+   NORMALISE GENERATION
+   ========================================================= */
 
-  function updateDashboard(data) {
+function normaliseGeneration(result) {
+
+    const rows =
+        Array.isArray(result)
+            ? result
+            : result.data || [];
+
+    const generation = {
+
+        wind: 0,
+
+        solar: 0,
+
+        gas: 0,
+
+        nuclear: 0,
+
+        hydro: 0,
+
+        biomass: 0,
+
+        storage: 0,
+
+        other: 0
+
+    };
+
+
+    rows.forEach(row => {
+
+        const name =
+            String(
+                row.psrType ||
+                row.fuelType ||
+                ""
+            ).toUpperCase();
+
+
+        const value =
+            Number(
+                row.halfHourUsage ??
+                row.generation ??
+                0
+            );
+
+
+        if (
+            !Number.isFinite(
+                value
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        if (
+            name.includes("WIND")
+        ) {
+
+            generation.wind +=
+                value;
+
+        }
+
+        else if (
+            name.includes("SOLAR")
+        ) {
+
+            generation.solar +=
+                value;
+
+        }
+
+        else if (
+            name.includes("GAS")
+        ) {
+
+            generation.gas +=
+                value;
+
+        }
+
+        else if (
+            name.includes("NUCLEAR")
+        ) {
+
+            generation.nuclear +=
+                value;
+
+        }
+
+        else if (
+            name.includes("HYDRO")
+        ) {
+
+            generation.hydro +=
+                value;
+
+        }
+
+        else if (
+            name.includes("BIOMASS")
+        ) {
+
+            generation.biomass +=
+                value;
+
+        }
+
+        else if (
+            name.includes("STORAGE") ||
+            name.includes("PUMP")
+        ) {
+
+            generation.storage +=
+                value;
+
+        }
+
+        else {
+
+            generation.other +=
+                value;
+
+        }
+
+    });
+
+
+    return generation;
+
+}
+
+
+/* =========================================================
+   UPDATE DEMAND
+   ========================================================= */
+
+function updateDemand(data) {
 
     if (!data.length) {
 
-      showError(
-        "NESO returned no usable data."
-      );
-
-      return;
+        throw new Error(
+            "No demand data returned"
+        );
 
     }
-
-
-    allData = data;
 
 
     const latest =
-      getLatest(data);
+        data[
+            data.length - 1
+        ];
 
 
-    if (!latest) {
+    const demandGW =
+        latest.demand / 1000;
 
-      showError(
-        "Could not find current demand."
-      );
 
-      return;
+    document
+        .getElementById(
+            "currentDemand"
+        )
+        .textContent =
+        demandGW.toFixed(2);
+
+
+    document
+        .getElementById(
+            "timestamp"
+        )
+        .textContent =
+        "Latest Elexon reading: " +
+        formatTime(
+            latest.date
+        );
+
+
+    /* TODAY'S PEAK */
+
+    const today =
+        data.filter(
+            item =>
+                sameDay(
+                    item.date,
+                    latest.date
+                )
+        );
+
+
+    const peak =
+        Math.max(
+            ...today.map(
+                item =>
+                    item.demand
+            )
+        );
+
+
+    document
+        .getElementById(
+            "peakValue"
+        )
+        .textContent =
+        (
+            peak / 1000
+        ).toFixed(2);
+
+
+    /* TREND */
+
+    if (data.length >= 2) {
+
+        const previous =
+            data[
+                data.length - 2
+            ];
+
+        const change =
+            latest.demand -
+            previous.demand;
+
+
+        const trend =
+            document
+                .getElementById(
+                    "trend"
+                );
+
+
+        if (change > 50) {
+
+            trend.textContent =
+                "▲ Demand rising";
+
+        }
+
+        else if (
+            change < -50
+        ) {
+
+            trend.textContent =
+                "▼ Demand falling";
+
+        }
+
+        else {
+
+            trend.textContent =
+                "● Demand stable";
+
+        }
 
     }
 
 
-    /*
-     * Current demand
-     */
+    renderChart(
+        data,
+        currentHours
+    );
+
+}
+
+
+/* =========================================================
+   UPDATE GENERATION
+   ========================================================= */
+
+function updateGeneration(
+    generation
+) {
+
+    const windGW =
+        generation.wind / 1000;
+
+    const solarGW =
+        generation.solar / 1000;
+
+    const gasGW =
+        generation.gas / 1000;
+
+    const nuclearGW =
+        generation.nuclear / 1000;
+
+    const hydroGW =
+        generation.hydro / 1000;
+
 
     document
-      .getElementById(
-        "currentDemand"
-      )
-      .textContent =
-      gw(latest.demand);
+        .getElementById(
+            "windValue"
+        )
+        .textContent =
+        windGW.toFixed(2);
 
 
     document
-      .getElementById(
-        "timestamp"
-      )
-      .textContent =
-      `Latest NESO reading: ${formatTime(latest.date)}`;
+        .getElementById(
+            "solarValue"
+        )
+        .textContent =
+        solarGW.toFixed(2);
 
 
-    /*
-     * Wind / solar
-     */
+    /* USE CURRENT DEMAND */
 
-    document
-      .getElementById(
-        "windValue"
-      )
-      .textContent =
-      gw(latest.wind);
+    const latest =
+        demandData[
+            demandData.length - 1
+        ];
 
 
-    document
-      .getElementById(
-        "solarValue"
-      )
-      .textContent =
-      gw(latest.solar);
+    const demandGW =
+        latest
+            ? latest.demand / 1000
+            : 0;
 
 
-    /*
-     * Renewable percentage
-     */
-
-    const renewable =
-      calculateRenewables(latest);
+    const renewables =
+        windGW +
+        solarGW +
+        hydroGW;
 
 
     const renewablePercent =
-      latest.demand > 0
-        ? renewable /
-          latest.demand *
-          100
-        : 0;
+        demandGW > 0
+            ? (
+                renewables /
+                demandGW *
+                100
+              )
+            : 0;
 
 
     document
-      .getElementById(
-        "renewableValue"
-      )
-      .textContent =
-      `${renewablePercent.toFixed(1)}%`;
+        .getElementById(
+            "renewableValue"
+        )
+        .textContent =
+        renewablePercent
+            .toFixed(1)
+        + "%";
 
 
-    document
-      .getElementById(
-        "ringValue"
-      )
-      .textContent =
-      `${renewablePercent.toFixed(0)}%`;
-
-
-    updateRing(
-      renewablePercent
-    );
-
-
-    /*
-     * Peak
-     */
-
-    const peak =
-      Math.max(
-        ...data
-          .filter(
-            x =>
-              x.demand !== null
-          )
-          .map(
-            x =>
-              x.demand
-          )
-      );
-
-
-    document
-      .getElementById(
-        "peakValue"
-      )
-      .textContent =
-      gw(peak);
-
-
-    /*
-     * Trend
-     */
-
-    updateTrend(
-      data
-    );
-
-
-    /*
-     * Generation bars
-     */
-
-    updateGenerationBars(
-      latest,
-      renewablePercent
-    );
-
-
-    /*
-     * Chart
-     */
-
-    renderChart(
-      data,
-      currentHours
-    );
-
-
-    document
-      .getElementById(
-        "dataStatus"
-      )
-      .textContent =
-      `Last successful update: ${new Date().toLocaleTimeString("en-GB")}`;
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * RENEWABLE CALCULATION
-   * ------------------------------------------------------------
-   */
-
-  function calculateRenewables(row) {
-
-    let total = 0;
-
-
-    if (row.wind !== null) {
-      total += row.wind;
-    }
-
-
-    if (row.solar !== null) {
-      total += row.solar;
-    }
-
-
-    /*
-     * Hydro is not always available
-     * in the daily dataset, so we don't
-     * invent a value here.
-     */
-
-    return total;
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * GENERATION BARS
-   * ------------------------------------------------------------
-   */
-
-  function updateGenerationBars(
-    row,
-    renewablePercent
-  ) {
-
-    const demand =
-      row.demand || 0;
-
-
-    const wind =
-      row.wind || 0;
-
-
-    const solar =
-      row.solar || 0;
-
-
-    const windPct =
-      demand
-        ? wind / demand * 100
-        : 0;
-
-
-    const solarPct =
-      demand
-        ? solar / demand * 100
-        : 0;
-
+    /* BARS */
 
     setBar(
-      "windBar",
-      "windMix",
-      windPct
+        "windBar",
+        "windMix",
+        percentage(
+            windGW,
+            demandGW
+        )
     );
 
 
     setBar(
-      "solarBar",
-      "solarMix",
-      solarPct
+        "solarBar",
+        "solarMix",
+        percentage(
+            solarGW,
+            demandGW
+        )
     );
 
 
-    /*
-     * The current NESO demand dataset does not
-     * necessarily expose the full generation
-     * breakdown in every record.
-     *
-     * Therefore we leave unavailable categories
-     * as unavailable rather than fabricating data.
-     */
-
-    setUnavailable(
-      "gasBar",
-      "gasMix"
+    setBar(
+        "gasBar",
+        "gasMix",
+        percentage(
+            gasGW,
+            demandGW
+        )
     );
 
 
-    setUnavailable(
-      "nuclearBar",
-      "nuclearMix"
+    setBar(
+        "nuclearBar",
+        "nuclearMix",
+        percentage(
+            nuclearGW,
+            demandGW
+        )
     );
 
 
-    setUnavailable(
-      "hydroBar",
-      "hydroMix"
+    setBar(
+        "hydroBar",
+        "hydroMix",
+        percentage(
+            hydroGW,
+            demandGW
+        )
     );
 
 
-    setUnavailable(
-      "otherBar",
-      "otherMix"
+    setBar(
+        "otherBar",
+        "otherMix",
+        percentage(
+            (
+                generation.biomass +
+                generation.storage +
+                generation.other
+            ) / 1000,
+            demandGW
+        )
     );
 
-  }
+}
 
 
-  function setBar(
-    barId,
-    textId,
-    percent
-  ) {
+/* =========================================================
+   BAR
+   ========================================================= */
+
+function setBar(
+    barID,
+    textID,
+    value
+) {
 
     const bar =
-      document.getElementById(
-        barId
-      );
+        document.getElementById(
+            barID
+        );
 
 
     const text =
-      document.getElementById(
-        textId
-      );
+        document.getElementById(
+            textID
+        );
+
+
+    if (!bar || !text) {
+        return;
+    }
+
+
+    const safe =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                value
+            )
+        );
 
 
     bar.style.width =
-      `${Math.min(100, Math.max(0, percent))}%`;
+        safe + "%";
 
 
     text.textContent =
-      `${percent.toFixed(1)}%`;
+        value.toFixed(1)
+        + "%";
 
-  }
-
-
-  function setUnavailable(
-    barId,
-    textId
-  ) {
-
-    document
-      .getElementById(
-        barId
-      )
-      .style.width =
-      "0%";
+}
 
 
-    document
-      .getElementById(
-        textId
-      )
-      .textContent =
-      "N/A";
+/* =========================================================
+   PERCENTAGE
+   ========================================================= */
 
-  }
+function percentage(
+    value,
+    total
+) {
 
+    if (
+        !total ||
+        total <= 0
+    ) {
 
-  /*
-   * ------------------------------------------------------------
-   * TREND
-   * ------------------------------------------------------------
-   */
-
-  function updateTrend(data) {
-
-    const valid =
-      data.filter(
-        x =>
-          x.demand !== null
-      );
-
-
-    if (valid.length < 2) {
-      return;
-    }
-
-
-    const latest =
-      valid[valid.length - 1];
-
-
-    const previous =
-      valid[valid.length - 2];
-
-
-    const difference =
-      latest.demand -
-      previous.demand;
-
-
-    const percent =
-      previous.demand
-        ? Math.abs(
-            difference /
-            previous.demand *
-            100
-          )
-        : 0;
-
-
-    const element =
-      document.getElementById(
-        "trend"
-      );
-
-
-    if (difference > 0) {
-
-      element.innerHTML =
-        `▲ Demand rising ${percent.toFixed(1)}%`;
-
-    } else if (difference < 0) {
-
-      element.innerHTML =
-        `▼ Demand falling ${percent.toFixed(1)}%`;
-
-    } else {
-
-      element.innerHTML =
-        `● Demand stable`;
+        return 0;
 
     }
 
-  }
+    return (
+        value /
+        total *
+        100
+    );
+
+}
 
 
-  /*
-   * ------------------------------------------------------------
-   * RENEWABLE RING
-   * ------------------------------------------------------------
-   */
+/* =========================================================
+   CHART
+   ========================================================= */
 
-  function updateRing(percent) {
-
-    const degrees =
-      Math.min(
-        100,
-        Math.max(
-          0,
-          percent
-        )
-      ) *
-      3.6;
-
-
-    document
-      .getElementById(
-        "renewableRing"
-      )
-      .style.background =
-      `radial-gradient(circle at center, var(--panel) 58%, transparent 59%),
-       conic-gradient(var(--green) 0deg, var(--green) ${degrees}deg, rgba(255,255,255,0.06) ${degrees}deg)`;
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * CHART
-   * ------------------------------------------------------------
-   */
-
-  function renderChart(
+function renderChart(
     data,
     hours
-  ) {
+) {
+
+    if (!data.length) {
+        return;
+    }
+
 
     const cutoff =
-      new Date(
-        Date.now() -
-        hours *
-        60 *
-        60 *
-        1000
-      );
+        new Date(
+            Date.now()
+            -
+            hours *
+            60 *
+            60 *
+            1000
+        );
 
 
     let filtered =
-      data.filter(
-        item =>
-          item.date >= cutoff &&
-          item.demand !== null
-      );
-
-
-    /*
-     * If the dataset does not contain
-     * enough recent records, display
-     * the most recent records available.
-     */
-
-    if (filtered.length < 2) {
-
-      filtered =
-        data
-          .filter(
+        data.filter(
             item =>
-              item.demand !== null
-          )
-          .slice(-48);
+                item.date >= cutoff
+        );
+
+
+    if (
+        filtered.length < 2
+    ) {
+
+        filtered =
+            data.slice(-48);
 
     }
 
 
     const labels =
-      filtered.map(
-        item =>
-          item.date.toLocaleTimeString(
-            "en-GB",
-            {
-              hour: "2-digit",
-              minute: "2-digit"
-            }
-          )
-      );
+        filtered.map(
+            item =>
+                item.date
+                    .toLocaleTimeString(
+                        "en-GB",
+                        {
+                            hour:
+                                "2-digit",
+                            minute:
+                                "2-digit"
+                        }
+                    )
+        );
 
 
     const values =
-      filtered.map(
-        item =>
-          item.demand / 1000
-      );
+        filtered.map(
+            item =>
+                (
+                    item.demand /
+                    1000
+                ).toFixed(2)
+        );
+
+
+    const canvas =
+        document.getElementById(
+            "demandChart"
+        );
 
 
     const ctx =
-      document
-        .getElementById(
-          "demandChart"
-        )
-        .getContext("2d");
+        canvas.getContext(
+            "2d"
+        );
 
 
     if (demandChart) {
-      demandChart.destroy();
+
+        demandChart.destroy();
+
     }
 
 
     const gradient =
-      ctx.createLinearGradient(
-        0,
-        0,
-        0,
-        330
-      );
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            340
+        );
 
 
     gradient.addColorStop(
-      0,
-      "rgba(61,220,151,0.28)"
+        0,
+        "rgba(57,217,149,.28)"
     );
 
 
     gradient.addColorStop(
-      1,
-      "rgba(61,220,151,0)"
+        1,
+        "rgba(57,217,149,0)"
     );
 
 
     demandChart =
-      new Chart(
-        ctx,
-        {
+        new Chart(
+            ctx,
+            {
 
-          type: "line",
+                type:
+                    "line",
 
-          data: {
+                data: {
 
-            labels,
+                    labels,
 
-            datasets: [
+                    datasets: [
 
-              {
+                        {
 
-                label:
-                  "Demand",
+                            data:
+                                values,
 
-                data:
-                  values,
+                            borderColor:
+                                "#39d995",
 
-                borderColor:
-                  "#3ddc97",
+                            backgroundColor:
+                                gradient,
 
-                backgroundColor:
-                  gradient,
+                            borderWidth:
+                                2.5,
 
-                borderWidth:
-                  2,
+                            fill:
+                                true,
 
-                fill:
-                  true,
+                            tension:
+                                .35,
 
-                tension:
-                  0.35,
+                            pointRadius:
+                                0,
 
-                pointRadius:
-                  0,
+                            pointHoverRadius:
+                                5
 
-                pointHoverRadius:
-                  5,
+                        }
 
-                pointHoverBackgroundColor:
-                  "#3ddc97"
-
-              }
-
-            ]
-
-          },
-
-
-          options: {
-
-            responsive:
-              true,
-
-            maintainAspectRatio:
-              false,
-
-            interaction: {
-
-              mode:
-                "index",
-
-              intersect:
-                false
-
-            },
-
-
-            plugins: {
-
-              legend: {
-                display: false
-              },
-
-              tooltip: {
-
-                backgroundColor:
-                  "#111925",
-
-                borderColor:
-                  "rgba(255,255,255,0.1)",
-
-                borderWidth:
-                  1,
-
-                titleColor:
-                  "#fff",
-
-                bodyColor:
-                  "#b8c2d0",
-
-                padding:
-                  12,
-
-                displayColors:
-                  false,
-
-                callbacks: {
-
-                  label:
-                    context =>
-                      `${context.parsed.y.toFixed(2)} GW`
-
-                }
-
-              }
-
-            },
-
-
-            scales: {
-
-              x: {
-
-                grid: {
-                  display: false
-                },
-
-                ticks: {
-
-                  color:
-                    "#687588",
-
-                  maxTicksLimit:
-                    8,
-
-                  font: {
-                    size: 10
-                  }
-
-                }
-
-              },
-
-
-              y: {
-
-                beginAtZero:
-                  false,
-
-                grid: {
-
-                  color:
-                    "rgba(255,255,255,0.05)"
+                    ]
 
                 },
 
-                ticks: {
 
-                  color:
-                    "#687588",
+                options: {
 
-                  font: {
-                    size: 10
-                  },
+                    responsive:
+                        true,
 
-                  callback:
-                    value =>
-                      `${value} GW`
+                    maintainAspectRatio:
+                        false,
+
+                    interaction: {
+
+                        intersect:
+                            false,
+
+                        mode:
+                            "index"
+
+                    },
+
+
+                    plugins: {
+
+                        legend: {
+
+                            display:
+                                false
+
+                        },
+
+                        tooltip: {
+
+                            backgroundColor:
+                                "#111923",
+
+                            borderColor:
+                                "rgba(255,255,255,.1)",
+
+                            borderWidth:
+                                1,
+
+                            displayColors:
+                                false,
+
+                            callbacks: {
+
+                                label:
+                                    context =>
+                                        context.parsed.y
+                                        + " GW"
+
+                            }
+
+                        }
+
+                    },
+
+
+                    scales: {
+
+                        x: {
+
+                            grid: {
+
+                                display:
+                                    false
+
+                            },
+
+                            ticks: {
+
+                                color:
+                                    "#718095",
+
+                                maxTicksLimit:
+                                    8
+
+                            }
+
+                        },
+
+
+                        y: {
+
+                            beginAtZero:
+                                false,
+
+                            grid: {
+
+                                color:
+                                    "rgba(255,255,255,.055)"
+
+                            },
+
+                            ticks: {
+
+                                color:
+                                    "#718095",
+
+                                callback:
+                                    value =>
+                                        value
+                                        + " GW"
+
+                            }
+
+                        }
+
+                    }
 
                 }
-
-              }
 
             }
+        );
 
-          }
+}
 
+
+/* =========================================================
+   FORMAT TIME
+   ========================================================= */
+
+function formatTime(
+    date
+) {
+
+    return date.toLocaleTimeString(
+        "en-GB",
+        {
+            hour:
+                "2-digit",
+
+            minute:
+                "2-digit"
         }
-      );
+    );
 
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * ERROR HANDLING
-   * ------------------------------------------------------------
-   */
-
-  function showError(message) {
-
-    document
-      .getElementById(
-        "dataStatus"
-      )
-      .innerHTML =
-      `<span class="error">${message}</span>`;
-
-  }
+}
 
 
-  /*
-   * ------------------------------------------------------------
-   * LOAD EVERYTHING
-   * ------------------------------------------------------------
-   */
+/* =========================================================
+   SAME DAY
+   ========================================================= */
 
-  async function loadData() {
+function sameDay(
+    a,
+    b
+) {
+
+    return (
+
+        a.getFullYear() ===
+            b.getFullYear()
+
+        &&
+
+        a.getMonth() ===
+            b.getMonth()
+
+        &&
+
+        a.getDate() ===
+            b.getDate()
+
+    );
+
+}
+
+
+/* =========================================================
+   LOAD EVERYTHING
+   ========================================================= */
+
+async function loadData() {
+
+    const status =
+        document.getElementById(
+            "dataStatus"
+        );
+
+
+    status.textContent =
+        "Updating live grid data…";
+
 
     try {
 
-      document
-        .getElementById(
-          "dataStatus"
-        )
-        .textContent =
-        "Updating from NESO…";
+        const results =
+            await Promise.all([
+                getDemand(),
+                getGeneration()
+            ]);
 
 
-      const records =
-        await fetchNESO();
+        demandData =
+            results[0];
 
 
-      const data =
-        normaliseData(
-          records
-        );
-
-
-      updateDashboard(
-        data
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "NESO error:",
-        error
-      );
-
-
-      showError(
-        "Unable to retrieve live NESO data. The API may be temporarily unavailable."
-      );
-
-    }
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * RANGE BUTTONS
-   * ------------------------------------------------------------
-   */
-
-  document
-    .querySelectorAll(
-      ".range-btn"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            document
-              .querySelectorAll(
-                ".range-btn"
-              )
-              .forEach(
-                b =>
-                  b.classList.remove(
-                    "active"
-                  )
-              );
-
-
-            button.classList.add(
-              "active"
+        const generation =
+            normaliseGeneration(
+                results[1]
             );
 
 
-            currentHours =
-              Number(
-                button.dataset.hours
-              );
-
-
-            if (allData.length) {
-
-              renderChart(
-                allData,
-                currentHours
-              );
-
-            }
-
-          }
+        updateDemand(
+            demandData
         );
 
-      }
+
+        updateGeneration(
+            generation
+        );
+
+
+        status.innerHTML =
+            "● Live data • updated " +
+            new Date()
+                .toLocaleTimeString(
+                    "en-GB"
+                )
+            +
+            "<br>" +
+            "Data supplied by Elexon Insights / BMRS.";
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Energy API error:",
+            error
+        );
+
+
+        status.innerHTML =
+            '<span class="error">' +
+            'Unable to retrieve live grid data. ' +
+            'Retrying automatically…' +
+            '</span>';
+
+    }
+
+}
+
+
+/* =========================================================
+   CHART RANGE BUTTONS
+   ========================================================= */
+
+document
+    .querySelectorAll(
+        ".range-btn"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    document
+                        .querySelectorAll(
+                            ".range-btn"
+                        )
+                        .forEach(
+                            btn =>
+                                btn.classList
+                                    .remove(
+                                        "active"
+                                    )
+                        );
+
+
+                    button.classList
+                        .add(
+                            "active"
+                        );
+
+
+                    currentHours =
+                        Number(
+                            button.dataset
+                                .hours
+                        );
+
+
+                    renderChart(
+                        demandData,
+                        currentHours
+                    );
+
+                }
+            );
+
+        }
     );
 
 
-  /*
-   * ------------------------------------------------------------
-   * INITIAL LOAD
-   * ------------------------------------------------------------
-   */
+/* =========================================================
+   START
+   ========================================================= */
 
-  loadData();
+loadData();
 
 
-  /*
-   * Automatically refresh every 5 minutes.
-   */
+/*
+   Refresh every 5 minutes.
+*/
 
-  setInterval(
+setInterval(
     loadData,
     REFRESH_INTERVAL
-  );
+);
 
 </script>
 
