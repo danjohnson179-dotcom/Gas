@@ -185,6 +185,92 @@ function isFossil(name) {
   return /gas|coal|oil|fossil/.test(name);
 }
 
+
+function calculateGridPulse() {
+  const demand = state.demandMW;
+  const generation = state.generationMW;
+  const power = state.powerPriceGBP;
+
+  let lowCarbonPct = null;
+  if (state.fuels.length && generation) {
+    const low = state.fuels
+      .filter((f) => /wind|solar|nuclear|hydro|biomass|renew/.test(f.name))
+      .reduce((sum, f) => sum + f.mw, 0);
+    lowCarbonPct = low / generation * 100;
+  }
+
+  let score = 50;
+
+  if (Number.isFinite(lowCarbonPct)) {
+    score += (lowCarbonPct - 40) * 0.55;
+  }
+
+  if (Number.isFinite(demand)) {
+    if (demand < 25000) score += 12;
+    else if (demand < 32000) score += 5;
+    else if (demand > 42000) score -= 14;
+    else if (demand > 36000) score -= 7;
+  }
+
+  if (Number.isFinite(power)) {
+    if (power < 50) score += 14;
+    else if (power < 80) score += 7;
+    else if (power > 140) score -= 18;
+    else if (power > 110) score -= 10;
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let label = "Balanced";
+  let title = "The grid looks balanced";
+  let explanation = "Demand, generation mix and wholesale price are sitting in a fairly normal combination.";
+
+  if (score >= 75) {
+    label = "Clean";
+    title = "A favourable grid right now";
+    explanation = "Lower demand, cleaner generation and/or softer wholesale power prices are supporting the score.";
+  } else if (score >= 58) {
+    label = "Healthy";
+    title = "The grid looks healthy";
+    explanation = "Current conditions look relatively comfortable across demand, generation mix and power price.";
+  } else if (score < 35) {
+    label = "Tight";
+    title = "The grid looks under pressure";
+    explanation = "Higher demand, a more fossil-heavy mix and/or expensive wholesale power are weighing on conditions.";
+  } else if (score < 48) {
+    label = "Watch";
+    title = "Market conditions are firmer";
+    explanation = "At least one live signal is pushing conditions away from the dashboard's normal range.";
+  }
+
+  return { score, label, title, explanation, lowCarbonPct };
+}
+
+function renderGridPulse() {
+  const pulse = calculateGridPulse();
+
+  const scoreEl = byId("gridPulseScore");
+  if (!scoreEl) return;
+
+  scoreEl.textContent = pulse.score;
+  byId("gridPulseBadge").textContent = pulse.label;
+  byId("gridPulseTitle").textContent = pulse.title;
+  byId("gridPulseExplanation").textContent = pulse.explanation;
+
+  byId("pulseDemand").textContent =
+    state.demandMW ? fmtGW(state.demandMW) : "-";
+
+  byId("pulseLowCarbon").textContent =
+    Number.isFinite(pulse.lowCarbonPct)
+      ? `${pulse.lowCarbonPct.toFixed(0)}%`
+      : "-";
+
+  byId("pulsePrice").textContent =
+    Number.isFinite(state.powerPriceGBP)
+      ? fmtGBP(state.powerPriceGBP)
+      : "-";
+}
+
 function render() {
   state.updated = new Date();
 
@@ -298,6 +384,8 @@ function render() {
       second: "2-digit"
     })}`;
 
+  renderGridPulse();
+
   const liveCount = [
     Boolean(state.generationMW),
     Boolean(state.demandMW),
@@ -372,7 +460,12 @@ function answer(question) {
     return `The latest validated Elexon wholesale electricity price is ${fmtGBP(state.powerPriceGBP)}.`;
   }
 
-  return "Ask me about demand, generation, wholesale electricity, or the UK NBP gas benchmark.";
+  if (/grid pulse|pulse|score|clean|balanced|tight/.test(q)) {
+    const pulse = calculateGridPulse();
+    return `Grid Pulse is ${pulse.score}/100 (${pulse.label}). It combines demand, low-carbon generation share and wholesale electricity price into one simple dashboard signal. It is not an official grid metric.`;
+  }
+
+  return "Ask me about Grid Pulse, demand, generation, wholesale electricity, or the UK NBP gas benchmark.";
 }
 
 function ask(text) {
