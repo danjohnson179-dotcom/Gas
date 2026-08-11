@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#07111f">
   <meta name="description" content="Live Great Britain electricity demand, generation mix and wholesale energy prices.">
   <title>GB Energy Live</title>
-  <link rel="stylesheet" href="style.css?v=1.4.0">
+  <link rel="stylesheet" href="style.css?v=1.4.1">
 
   <style>
     .beta-feature-section {
@@ -260,10 +260,248 @@
     }
   </style>
 
+
+  <style>
+    body.test-notice-open {
+      overflow: hidden !important;
+    }
+
+    .test-notice-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(2, 8, 16, .82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .test-notice-overlay.open {
+      display: flex;
+    }
+
+    .test-notice-modal {
+      width: min(560px, 100%);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 90% 5%, rgba(95,224,167,.09), transparent 15rem),
+        #0b1829;
+      box-shadow: 0 32px 110px rgba(0,0,0,.55);
+    }
+
+    .test-notice-top {
+      padding: 25px 25px 19px;
+      border-bottom: 1px solid rgba(255,255,255,.075);
+    }
+
+    .test-notice-badges {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-bottom: 17px;
+    }
+
+    .test-notice-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: #5fe0a7;
+      color: #061a12;
+      font-size: 9px;
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: .09em;
+    }
+
+    .test-notice-badge.secondary {
+      border: 1px solid rgba(103,183,255,.2);
+      background: rgba(103,183,255,.07);
+      color: #67b7ff;
+    }
+
+    .test-notice-modal h2 {
+      margin: 0 0 10px;
+      color: #f5f8fc;
+      font-size: clamp(28px, 6vw, 40px);
+      line-height: 1.05;
+      letter-spacing: -.045em;
+    }
+
+    .test-notice-intro {
+      margin: 0;
+      color: #a1afc2;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .test-notice-body {
+      padding: 20px 25px 23px;
+    }
+
+    .test-notice-points {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 21px;
+    }
+
+    .test-notice-point {
+      display: grid;
+      grid-template-columns: 27px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 11px;
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 13px;
+      background: rgba(255,255,255,.018);
+    }
+
+    .test-notice-point-icon {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(95,224,167,.07);
+      color: #5fe0a7;
+      font-size: 10px;
+      font-weight: 950;
+    }
+
+    .test-notice-point strong {
+      display: block;
+      margin: 1px 0 3px;
+      color: #f5f8fc;
+      font-size: 12px;
+    }
+
+    .test-notice-point span {
+      display: block;
+      color: #91a1b7;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .test-notice-legal {
+      margin: 0 0 17px;
+      color: #8191a7;
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .test-notice-accept {
+      width: 100%;
+      border: 0;
+      border-radius: 13px;
+      padding: 14px 18px;
+      background: #5fe0a7;
+      color: #061a12;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .test-notice-accept:active {
+      transform: scale(.99);
+    }
+
+    .test-notice-memory {
+      display: block;
+      margin-top: 9px;
+      text-align: center;
+      color: #6f8097;
+      font-size: 9px;
+    }
+
+    @media (max-width: 520px) {
+      .test-notice-overlay {
+        align-items: flex-end;
+        padding: 10px;
+      }
+
+      .test-notice-modal {
+        border-radius: 22px;
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+      }
+
+      .test-notice-top {
+        padding: 20px 18px 16px;
+      }
+
+      .test-notice-body {
+        padding: 16px 18px 20px;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
+
+  
+  <div id="testNotice" class="test-notice-overlay" role="dialog" aria-modal="true" aria-labelledby="testNoticeTitle">
+    <div class="test-notice-modal">
+      <div class="test-notice-top">
+        <div class="test-notice-badges">
+          <span class="test-notice-badge">TEST SITE</span>
+          <span class="test-notice-badge secondary">BETA</span>
+        </div>
+
+        <h2 id="testNoticeTitle">Before you continue</h2>
+
+        <p class="test-notice-intro">
+          GB Energy Live is an experimental test product. Data and tools on this site are provided for demonstration and general information only.
+        </p>
+      </div>
+
+      <div class="test-notice-body">
+        <div class="test-notice-points">
+          <div class="test-notice-point">
+            <div class="test-notice-point-icon">01</div>
+            <div>
+              <strong>Live data may be wrong or delayed</strong>
+              <span>Energy demand, generation, wholesale prices and tariff information can be incomplete, delayed, unavailable or incorrectly interpreted.</span>
+            </div>
+          </div>
+
+          <div class="test-notice-point">
+            <div class="test-notice-point-icon">02</div>
+            <div>
+              <strong>Beta tools are estimates</strong>
+              <span>EPC estimates, Grid Pulse, tariff comparisons and chatbot explanations are experimental and should not be treated as official assessments or advice.</span>
+            </div>
+          </div>
+
+          <div class="test-notice-point">
+            <div class="test-notice-point-icon">03</div>
+            <div>
+              <strong>Do not rely on this site for decisions</strong>
+              <span>Always verify important information with the relevant supplier, regulator, network operator or other authoritative source before acting.</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="test-notice-legal">
+          By continuing, you acknowledge that this is a test website and agree not to treat information displayed here as guaranteed, official, financial, professional or purchasing advice.
+        </p>
+
+        <button id="acceptTestNotice" class="test-notice-accept" type="button">
+          Accept and continue
+        </button>
+
+        <span class="test-notice-memory">
+          Your browser will remember this acknowledgement on this device.
+        </span>
+      </div>
+    </div>
+  </div>
+
 
   <header class="topbar">
     <a class="brand" href="#overview" aria-label="GB Energy Live home">
@@ -587,7 +825,7 @@
   </aside>
 
   <footer>
-    <span>GB Energy Live v1.4.0</span>
+    <span>GB Energy Live v1.4.1</span>
     <span>Elexon + UK NBP benchmark</span>
   </footer>
 
@@ -626,6 +864,41 @@
     })();
   </script>
 
-  <script src="app.js?v=1.4.0"></script>
+  <script src="app.js?v=1.4.1"></script>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "gbEnergyLiveTestNoticeAccepted_v1";
+      const notice = document.getElementById("testNotice");
+      const accept = document.getElementById("acceptTestNotice");
+
+      if (!notice || !accept) return;
+
+      let accepted = false;
+
+      try {
+        accepted = localStorage.getItem(STORAGE_KEY) === "yes";
+      } catch (error) {
+        accepted = false;
+      }
+
+      if (!accepted) {
+        notice.classList.add("open");
+        document.body.classList.add("test-notice-open");
+      }
+
+      accept.addEventListener("click", function () {
+        try {
+          localStorage.setItem(STORAGE_KEY, "yes");
+        } catch (error) {
+          // If local storage is unavailable, the user can still continue.
+        }
+
+        notice.classList.remove("open");
+        document.body.classList.remove("test-notice-open");
+      });
+    })();
+  </script>
+
 </body>
 </html>
