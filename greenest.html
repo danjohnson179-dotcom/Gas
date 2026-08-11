@@ -152,163 +152,430 @@
     </section>
   </main>
 
-  <footer>GB Energy Live v1.5.1 - Data from the official NESO Carbon Intensity API</footer>
+  <footer>GB Energy Live v1.5.2 - Data from the official NESO Carbon Intensity API</footer>
 
   <script>
-    const API="https://api.carbonintensity.org.uk";
-    const postcode=document.getElementById("postcode");
-    const loadBtn=document.getElementById("loadBtn");
-    const timeline=document.getElementById("timeline");
+    const API = "https://api.carbonintensity.org.uk";
+    const postcode = document.getElementById("postcode");
+    const loadBtn = document.getElementById("loadBtn");
+    const timeline = document.getElementById("timeline");
 
-    const cleanPostcode=v=>String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
-    const localTime=iso=>new Date(iso).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-    const localDayTime=iso=>new Date(iso).toLocaleString([], {weekday:"short",hour:"2-digit",minute:"2-digit"});
+    const cleanPostcode = (v) =>
+      String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
 
-    function roundedApiTime(){
-      const d=new Date();
-      d.setUTCSeconds(0,0);
-      d.setUTCMinutes(d.getUTCMinutes()<30?0:30);
-      return d.toISOString().slice(0,16)+"Z";
+    const localTime = (iso) =>
+      new Date(iso).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+    const localDayTime = (iso) =>
+      new Date(iso).toLocaleString([], {
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+    function apiStartTime() {
+      const d = new Date();
+
+      // NESO publishes half-hour settlement periods.
+      d.setUTCSeconds(0, 0);
+      d.setUTCMinutes(d.getUTCMinutes() < 30 ? 0 : 30);
+
+      return d.toISOString().slice(0, 16) + "Z";
     }
 
-    async function getJson(url){
-      const r=await fetch(url,{headers:{Accept:"application/json"},cache:"no-store"});
-      if(!r.ok) throw new Error(`NESO API ${r.status}`);
-      return r.json();
+    async function getJson(url) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+
+      try {
+        const response = await fetch(url, {
+          signal: controller.signal,
+          cache: "no-store",
+          headers: { Accept: "application/json" }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        return await response.json();
+      } finally {
+        clearTimeout(timer);
+      }
     }
 
-    // NESO regional responses can contain a region object whose own `data`
-    // array contains the half-hour periods. Walk the response recursively
-    // and collect only objects that actually have from/to + intensity.
-    function collectPeriods(node, meta={}, out=[]){
-      if(Array.isArray(node)){
-        node.forEach(x=>collectPeriods(x,meta,out));
+    /*
+      Regional responses are nested like:
+
+      data -> region -> data -> half-hour periods
+
+      National responses are:
+
+      data -> half-hour periods
+
+      This recursively finds every object that contains:
+      from + to + intensity.forecast
+    */
+    function collectPeriods(node, inherited = {}, out = []) {
+      if (Array.isArray(node)) {
+        node.forEach((item) => collectPeriods(item, inherited, out));
         return out;
       }
-      if(!node || typeof node!=="object") return out;
 
-      const nextMeta={
-        regionid: node.regionid ?? meta.regionid,
-        shortname: node.shortname ?? meta.shortname,
-        dnoregion: node.dnoregion ?? meta.dnoregion
+      if (!node || typeof node !== "object") return out;
+
+      const meta = {
+        regionid: node.regionid ?? inherited.regionid,
+        shortname: node.shortname ?? inherited.shortname,
+        dnoregion: node.dnoregion ?? inherited.dnoregion
       };
 
-      if(node.from && node.to && node.intensity && typeof node.intensity==="object"){
-        out.push({...node,...nextMeta});
+      if (
+        node.from &&
+        node.to &&
+        node.intensity &&
+        Number.isFinite(Number(node.intensity.forecast))
+      ) {
+        out.push({
+          ...node,
+          ...meta
+        });
       }
 
-      if(node.data) collectPeriods(node.data,nextMeta,out);
-      if(node.regions) collectPeriods(node.regions,nextMeta,out);
+      Object.entries(node).forEach(([key, value]) => {
+        if (
+          key !== "intensity" &&
+          key !== "generationmix" &&
+          (Array.isArray(value) || (value && typeof value === "object"))
+        ) {
+          collectPeriods(value, meta, out);
+        }
+      });
+
       return out;
     }
 
-    const forecastValue=row=>Number(row?.intensity?.forecast);
-    const indexLabel=row=>row?.intensity?.index || "unknown";
+    const forecastValue = (row) => Number(row?.intensity?.forecast);
+    const indexLabel = (row) => String(row?.intensity?.index || "unknown");
 
-    function bestWindow(rows,count){
-      if(rows.length<count)return null;
-      let best=null;
-      for(let i=0;i<=rows.length-count;i++){
-        const w=rows.slice(i,i+count), vals=w.map(forecastValue);
-        if(vals.some(v=>!Number.isFinite(v)))continue;
-        const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-        if(!best||avg<best.avg)best={avg,start:w[0].from,end:w[w.length-1].to,index:i,count};
+    function bestWindow(rows, count) {
+      if (rows.length < count) return null;
+
+      let best = null;
+
+      for (let i = 0; i <= rows.length - count; i += 1) {
+        const sample = rows.slice(i, i + count);
+        const values = sample.map(forecastValue);
+
+        if (values.some((v) => !Number.isFinite(v))) continue;
+
+        const avg =
+          values.reduce((sum, value) => sum + value, 0) / values.length;
+
+        if (!best || avg < best.avg) {
+          best = {
+            avg,
+            start: sample[0].from,
+            end: sample[sample.length - 1].to,
+            index: i,
+            count
+          };
+        }
       }
+
       return best;
     }
 
-    function formatWindow(w){
-      return w ? `${localDayTime(w.start)} â ${localTime(w.end)}` : "â";
+    function formatWindow(window) {
+      if (!window) return "-";
+      return `${localDayTime(window.start)} - ${localTime(window.end)}`;
     }
 
-    function render(rows,region){
-      rows=rows.filter(r=>r.from && Number.isFinite(forecastValue(r)))
-               .sort((a,b)=>Date.parse(a.from)-Date.parse(b.from));
+    function render(rows, regionName, sourceLabel) {
+      rows = rows
+        .filter((row) =>
+          row.from &&
+          Number.isFinite(forecastValue(row))
+        )
+        .sort((a, b) => Date.parse(a.from) - Date.parse(b.from));
 
-      const now=rows[0], best3=bestWindow(rows,6), best2=bestWindow(rows,4), best6=bestWindow(rows,12);
-      document.getElementById("currentIntensity").textContent=now?`${forecastValue(now)} gCO2/kWh`:"â";
-      document.getElementById("currentIndex").textContent=now?indexLabel(now):"Unavailable";
-      document.getElementById("regionName").textContent=region||rows[0]?.shortname||"Your region";
-      document.getElementById("updatedText").textContent=`Loaded ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
-
-      if(best3){
-        document.getElementById("bestHeadline").textContent=`Greenest window: ${localDayTime(best3.start)}`;
-        document.getElementById("bestCopy").textContent=`The lowest-carbon continuous 3-hour period averages about ${Math.round(best3.avg)} gCO2/kWh.`;
-        const bw=document.getElementById("bestWindow");
-        bw.style.display="inline-flex";
-        bw.querySelector("strong").textContent=formatWindow(best3);
+      if (!rows.length) {
+        throw new Error("No usable forecast periods");
       }
 
-      document.getElementById("washTime").textContent=formatWindow(best2);
-      document.getElementById("dishTime").textContent=formatWindow(best2);
-      document.getElementById("evTime").textContent=formatWindow(best6);
+      const now = rows[0];
+      const best3 = bestWindow(rows, 6);
+      const best2 = bestWindow(rows, 4);
+      const best6 = bestWindow(rows, 12);
 
-      const day=rows.slice(0,48), vals=day.map(forecastValue);
-      const min=Math.min(...vals), max=Math.max(...vals), range=Math.max(1,max-min);
-      timeline.innerHTML=day.map((row,i)=>{
-        const v=forecastValue(row);
-        const pct=Math.max(8,Math.round((1-(v-min)/range)*100));
-        const inBest=best3&&i>=best3.index&&i<best3.index+best3.count;
-        return `<div class="slot${inBest?" best":""}">
-          <span class="slot-time">${localTime(row.from)}</span>
-          <strong>${v}</strong><small>gCO2/kWh</small><small>${indexLabel(row)}</small>
-          <div class="bar"><span style="width:${pct}%"></span></div>
-        </div>`;
+      document.getElementById("currentIntensity").textContent =
+        `${forecastValue(now)} gCO2/kWh`;
+
+      document.getElementById("currentIndex").textContent =
+        indexLabel(now);
+
+      document.getElementById("regionName").textContent =
+        regionName || "Great Britain";
+
+      document.getElementById("updatedText").textContent =
+        `${sourceLabel} - ${new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        })}`;
+
+      if (best3) {
+        document.getElementById("bestHeadline").textContent =
+          `Greenest window: ${localDayTime(best3.start)}`;
+
+        document.getElementById("bestCopy").textContent =
+          `The lowest-carbon continuous 3-hour period averages about ${Math.round(best3.avg)} gCO2/kWh.`;
+
+        const bestWindowEl = document.getElementById("bestWindow");
+        bestWindowEl.style.display = "inline-flex";
+        bestWindowEl.querySelector("strong").textContent =
+          formatWindow(best3);
+      }
+
+      document.getElementById("washTime").textContent =
+        formatWindow(best2);
+
+      document.getElementById("dishTime").textContent =
+        formatWindow(best2);
+
+      document.getElementById("evTime").textContent =
+        formatWindow(best6);
+
+      const day = rows.slice(0, 48);
+      const values = day.map(forecastValue);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const range = Math.max(1, max - min);
+
+      timeline.innerHTML = day.map((row, index) => {
+        const value = forecastValue(row);
+
+        const greenScore = Math.max(
+          8,
+          Math.round((1 - (value - min) / range) * 100)
+        );
+
+        const isBest =
+          best3 &&
+          index >= best3.index &&
+          index < best3.index + best3.count;
+
+        return `
+          <div class="slot${isBest ? " best" : ""}">
+            <span class="slot-time">${localTime(row.from)}</span>
+            <strong>${value}</strong>
+            <small>gCO2/kWh</small>
+            <small>${indexLabel(row)}</small>
+            <div class="bar">
+              <span style="width:${greenScore}%"></span>
+            </div>
+          </div>
+        `;
       }).join("");
     }
 
-    async function load(){
-      const pc=cleanPostcode(postcode.value);
-      if(!pc)return;
-      postcode.value=pc;
-      loadBtn.disabled=true;
-      loadBtn.textContent="Loadingâ¦";
-      timeline.innerHTML='<div class="empty">Loading NESO regional forecastâ¦</div>';
+    async function regionalByPostcode(pc, start) {
+      const url =
+        `${API}/regional/intensity/${encodeURIComponent(start)}` +
+        `/fw48h/postcode/${encodeURIComponent(pc)}`;
 
-      try{
-        // First resolve the outward postcode to NESO's region.
-        const current=await getJson(`${API}/regional/postcode/${encodeURIComponent(pc)}`);
-        const currentPeriods=collectPeriods(current);
-        const regionObj=(Array.isArray(current?.data)?current.data[0]:null)||{};
-        const regionId=regionObj.regionid ?? currentPeriods[0]?.regionid;
-        const regionName=regionObj.shortname || currentPeriods[0]?.shortname || `Postcode ${pc}`;
-        if(!regionId) throw new Error("Postcode did not resolve to a NESO region");
+      const json = await getJson(url);
+      const rows = collectPeriods(json);
 
-        // Region-ID forecast is more robust than asking the API to resolve the
-        // postcode again inside the forecast endpoint.
-        const from=roundedApiTime();
-        let forecast;
-        try{
-          forecast=await getJson(`${API}/regional/intensity/${encodeURIComponent(from)}/fw48h/regionid/${regionId}`);
-        }catch(e){
-          // Graceful fallback to 24h if the 48h endpoint is temporarily unavailable.
-          forecast=await getJson(`${API}/regional/intensity/${encodeURIComponent(from)}/fw24h/regionid/${regionId}`);
+      const topRegion = Array.isArray(json?.data)
+        ? json.data[0]
+        : null;
+
+      if (!rows.length) {
+        throw new Error("No postcode forecast returned");
+      }
+
+      return {
+        rows,
+        regionName:
+          topRegion?.shortname ||
+          rows[0]?.shortname ||
+          `Postcode ${pc}`,
+        source: "Regional forecast"
+      };
+    }
+
+    async function regionalByRegionId(pc, start) {
+      const current = await getJson(
+        `${API}/regional/postcode/${encodeURIComponent(pc)}`
+      );
+
+      const currentRows = collectPeriods(current);
+
+      const topRegion = Array.isArray(current?.data)
+        ? current.data[0]
+        : null;
+
+      const regionId =
+        topRegion?.regionid ??
+        currentRows[0]?.regionid;
+
+      if (!regionId) {
+        throw new Error("Could not resolve region ID");
+      }
+
+      const regionName =
+        topRegion?.shortname ||
+        currentRows[0]?.shortname ||
+        `Postcode ${pc}`;
+
+      const forecast = await getJson(
+        `${API}/regional/intensity/${encodeURIComponent(start)}` +
+        `/fw48h/regionid/${regionId}`
+      );
+
+      const rows = collectPeriods(forecast);
+
+      if (!rows.length) {
+        throw new Error("No region forecast returned");
+      }
+
+      return {
+        rows,
+        regionName,
+        source: "Regional forecast"
+      };
+    }
+
+    async function nationalFallback(start) {
+      const json = await getJson(
+        `${API}/intensity/${encodeURIComponent(start)}/fw48h`
+      );
+
+      const rows = collectPeriods(json);
+
+      if (!rows.length) {
+        throw new Error("No national forecast returned");
+      }
+
+      return {
+        rows,
+        regionName: "Great Britain",
+        source: "National fallback"
+      };
+    }
+
+    async function load() {
+      const pc = cleanPostcode(postcode.value);
+      if (!pc) return;
+
+      postcode.value = pc;
+      loadBtn.disabled = true;
+      loadBtn.textContent = "Loading...";
+
+      timeline.innerHTML =
+        '<div class="empty">Loading NESO carbon forecast...</div>';
+
+      document.getElementById("currentIntensity").textContent = "-";
+      document.getElementById("currentIndex").textContent = "Loading";
+
+      const start = apiStartTime();
+
+      try {
+        let data = null;
+
+        // Attempt 1: official regional postcode forecast.
+        try {
+          data = await regionalByPostcode(pc, start);
+          console.log("Greenest Time: postcode forecast");
+        } catch (error) {
+          console.warn("Postcode forecast failed:", error);
         }
 
-        const rows=collectPeriods(forecast);
-        if(!rows.length)throw new Error("No forecast periods returned");
-        render(rows,regionName);
-      }catch(err){
-        console.error("Greenest Time:",err);
-        timeline.innerHTML='<div class="empty">The regional forecast is temporarily unavailable. Please try again shortly.</div>';
-        document.getElementById("currentIntensity").textContent="â";
-        document.getElementById("currentIndex").textContent="Unavailable";
-        document.getElementById("bestHeadline").textContent="Forecast temporarily unavailable";
-        document.getElementById("bestCopy").textContent="We could not retrieve a usable regional forecast from NESO. No estimate has been substituted.";
-        document.getElementById("bestWindow").style.display="none";
-      }finally{
-        loadBtn.disabled=false;
-        loadBtn.textContent="Find green times";
+        // Attempt 2: resolve the postcode first, then query region ID.
+        if (!data) {
+          try {
+            data = await regionalByRegionId(pc, start);
+            console.log("Greenest Time: region ID forecast");
+          } catch (error) {
+            console.warn("Region ID forecast failed:", error);
+          }
+        }
+
+        // Attempt 3: national NESO forecast.
+        if (!data) {
+          try {
+            data = await nationalFallback(start);
+            console.log("Greenest Time: national fallback");
+          } catch (error) {
+            console.warn("National forecast failed:", error);
+          }
+        }
+
+        if (!data) {
+          throw new Error("All NESO forecast routes failed");
+        }
+
+        render(
+          data.rows,
+          data.regionName,
+          data.source
+        );
+
+        if (data.source === "National fallback") {
+          document.getElementById("bestCopy").textContent +=
+            " Regional data was unavailable, so this result uses the GB-wide NESO forecast.";
+        }
+      } catch (error) {
+        console.error("Greenest Time:", error);
+
+        timeline.innerHTML =
+          '<div class="empty">NESO carbon-intensity data is temporarily unavailable. Please try again shortly.</div>';
+
+        document.getElementById("currentIntensity").textContent = "-";
+        document.getElementById("currentIndex").textContent = "Unavailable";
+
+        document.getElementById("bestHeadline").textContent =
+          "Forecast temporarily unavailable";
+
+        document.getElementById("bestCopy").textContent =
+          "The NESO API did not return a usable regional or national forecast. No estimate has been substituted.";
+
+        document.getElementById("bestWindow").style.display = "none";
+      } finally {
+        loadBtn.disabled = false;
+        loadBtn.textContent = "Find green times";
       }
     }
 
-    loadBtn.addEventListener("click",load);
-    postcode.addEventListener("keydown",e=>{if(e.key==="Enter")load()});
-    document.querySelectorAll("[data-postcode]").forEach(b=>b.addEventListener("click",()=>{postcode.value=b.dataset.postcode;load()}));
+    loadBtn.addEventListener("click", load);
 
-    const mb=document.getElementById("menuBtn"),sm=document.getElementById("siteMenu");
-    mb.addEventListener("click",e=>{e.stopPropagation();sm.classList.toggle("open")});
-    document.addEventListener("click",e=>{if(!sm.contains(e.target)&&e.target!==mb)sm.classList.remove("open")});
+    postcode.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") load();
+    });
+
+    document.querySelectorAll("[data-postcode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        postcode.value = button.dataset.postcode;
+        load();
+      });
+    });
+
+    const menuButton = document.getElementById("menuBtn");
+    const siteMenu = document.getElementById("siteMenu");
+
+    menuButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      siteMenu.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!siteMenu.contains(event.target)) {
+        siteMenu.classList.remove("open");
+      }
+    });
 
     load();
   </script>
