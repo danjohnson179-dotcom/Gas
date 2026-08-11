@@ -1,16 +1,22 @@
 {
-  "updated": null,
+  "updated": "2026-08-11T10:31:55.609Z",
   "currency": "GBP",
   "displayUnit": "GBP/MWh",
   "version": "1.0.3",
   "electricity": {
-    "status": "unavailable",
-    "message": "Waiting for the next successful price refresh.",
-    "source": "Elexon Insights"
+    "status": "ok",
+    "gbpPerMWh": 93.5,
+    "originalPrice": 93.5,
+    "originalUnit": "GBP/MWh",
+    "provider": "APXMIDP",
+    "volumeMWh": 1775.35,
+    "observationTime": "2026-08-11T10:00:00Z",
+    "source": "Elexon Insights",
+    "sourceUrl": "https://bmrs.elexon.co.uk/market-index-prices"
   },
   "gas": {
     "status": "unavailable",
-    "message": "Waiting for the next successful price refresh.",
+    "message": "National Gas publication PUBOB863 returned no numeric values.",
     "source": "National Gas Transmission REST API"
   }
 }
