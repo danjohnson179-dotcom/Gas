@@ -1,0 +1,12 @@
+{
+  "version": "1.5.3",
+  "updated": null,
+  "forecastStart": null,
+  "source": "NESO Carbon Intensity API",
+  "stale": true,
+  "warnings": [
+    "Waiting for first successful GitHub Actions refresh."
+  ],
+  "regions": null,
+  "national": null
+}
