@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#07111f">
   <meta name="description" content="Beta live UK energy tariff comparison using the Octopus Energy API.">
-  <title>Tariff Compare Beta | GB Energy Live</title>
+  <title>Tariff Compare | GB Energy Live</title>
   <style>
     :root{
       --bg:#07111f;--panel:#0c192a;--panel2:#102238;--border:rgba(255,255,255,.09);
@@ -77,18 +77,19 @@
       <button id="menuBtn" class="menu-btn" aria-label="Open menu"><span></span><span></span><span></span></button>
       <div id="siteMenu" class="site-menu">
         <a class="menu-link" href="index.html"><strong>Energy dashboard</strong><small>Live GB energy data</small></a>
-        <a class="menu-link" href="epc.html"><strong>EPC Estimate - Beta</strong><small>Home energy estimator</small></a>
-        <a class="menu-link" href="tariffs.html"><strong>Tariff Compare - Beta</strong><small>Live tariff comparison</small></a>
+        <a class="menu-link" href="epc.html"><strong>EPC Estimate</strong><small>Home energy estimator</small></a>
+        <a class="menu-link" href="tariffs.html"><strong>Tariff Compare</strong><small>Live tariff comparison</small></a>
+        <a class="menu-link" href="greenest.html"><strong>Greenest Time</strong><small>Best time to use electricity</small></a>
       </div>
     </div>
   </header>
 
   <main>
     <section class="section hero">
-      <div class="tag-row"><span class="tag">BETA</span><span class="tag alt">NEW FEATURE</span></div>
+      <div class="tag-row"><span class="tag alt">LIVE API TOOL</span></div>
       <h1>Compare energy tariffs using <span class="accent">live API data.</span></h1>
       <p>Enter your annual usage, choose your electricity region and compare compatible live Octopus tariffs with the current Ofgem direct-debit price-cap benchmark.</p>
-      <div class="beta-note"><strong>Beta scope:</strong> this is not yet a whole-market switching service. It currently compares tariffs exposed by Octopus Energy's public API against the Ofgem benchmark. Smart/time-of-use products that cannot be estimated from a single unit rate are excluded.</div>
+      <div class="beta-note"><strong>Current scope:</strong> this is not yet a whole-market switching service. It currently compares tariffs exposed by Octopus Energy's public API against the Ofgem benchmark. Smart/time-of-use products that cannot be estimated from a single unit rate are excluded.</div>
     </section>
 
     <section class="section" style="padding-top:18px">
@@ -147,7 +148,7 @@
     </section>
   </main>
 
-  <footer>GB Energy Live v1.4.0 - Tariff Compare Beta</footer>
+  <footer>GB Energy Live v1.4.0 - Tariff Compare</footer>
 
   <script>
     const PRODUCTS="https://api.octopus.energy/v1/products/?brand=OCTOPUS_ENERGY&is_business=false";
