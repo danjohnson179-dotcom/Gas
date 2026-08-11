@@ -117,7 +117,7 @@ function cleanPeriods(rows) {
 
 async function loadRegional(start) {
   const url =
-    `${API}/regional/intensity/${encodeURIComponent(start)}/fw48h`;
+    `${API}/regional/intensity/${start}/fw48h`;
 
   const json = await fetchJson(url);
   const rows = collectPeriods(json);
@@ -151,9 +151,23 @@ async function loadRegional(start) {
   return grouped;
 }
 
+
+async function loadNationalFallback() {
+  // If NESO ever rejects the fw48h path around a boundary, use a direct
+  // current-intensity request as a diagnostic. This does not fabricate data.
+  const json = await fetchJson(`${API}/intensity`);
+  const periods = cleanPeriods(collectPeriods(json));
+
+  if (!periods.length) {
+    throw new Error("NESO current national endpoint returned no usable period.");
+  }
+
+  return periods;
+}
+
 async function loadNational(start) {
   const url =
-    `${API}/intensity/${encodeURIComponent(start)}/fw48h`;
+    `${API}/intensity/${start}/fw48h`;
 
   const json = await fetchJson(url);
   const periods = cleanPeriods(collectPeriods(json));
@@ -198,7 +212,7 @@ if (!regions && !national) {
 }
 
 const result = {
-  version: "1.5.3",
+  version: "1.5.4",
   updated,
   forecastStart: start,
   source: "NESO Carbon Intensity API",
