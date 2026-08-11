@@ -1,0 +1,12 @@
+{
+  "name": "gb-energy-live",
+  "version": "1.0.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "update-prices": "node scripts/update-prices.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.54.2"
+  }
+}
