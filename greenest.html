@@ -12,7 +12,7 @@
       --text:#f5f8fc;--muted:#91a1b7;--accent:#5fe0a7;--blue:#67b7ff;
       --warn:#ffcf66;--danger:#ff8b8b;--shadow:0 20px 70px rgba(0,0,0,.28)
     }
-    *{box-sizing:border-box}
+    *{box-sizing:border-box}html,body{width:100%;max-width:100%;overflow-x:hidden}
     body{margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);
       background:radial-gradient(circle at 86% 7%,rgba(95,224,167,.14),transparent 29rem),
       radial-gradient(circle at 10% 48%,rgba(103,183,255,.08),transparent 25rem),var(--bg);min-height:100vh}
@@ -37,13 +37,13 @@
     .hero h1{max-width:930px;margin:12px 0 17px;font-size:clamp(46px,7vw,78px);line-height:.98;letter-spacing:-.055em}
     .accent{color:var(--accent)}
     .hero>p{max-width:760px;color:var(--muted);font-size:17px;line-height:1.6}
-    .tool-shell{display:grid;grid-template-columns:310px minmax(0,1fr);gap:16px;align-items:start}
-    .panel{border:1px solid var(--border);border-radius:22px;background:rgba(12,25,42,.84);box-shadow:var(--shadow);padding:21px}
+    .tool-shell{display:grid;grid-template-columns:310px minmax(0,1fr);gap:16px;align-items:start;min-width:0}.tool-shell>*{min-width:0}
+    .panel{min-width:0;width:100%;border:1px solid var(--border);border-radius:22px;background:rgba(12,25,42,.84);box-shadow:var(--shadow);padding:21px}
     .panel h2,.panel h3{margin-top:0}
     .field{display:block;margin-bottom:14px}.field span{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}
-    .postcode-row{display:grid;grid-template-columns:1fr auto;gap:8px}
+    .postcode-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;min-width:0}
     input{min-width:0;width:100%;border:1px solid var(--border);border-radius:11px;background:#081525;color:var(--text);padding:12px;text-transform:uppercase}
-    .primary{border:0;border-radius:11px;padding:12px 14px;background:var(--accent);color:#061a12;font-weight:900;cursor:pointer}
+    .primary{max-width:100%;white-space:normal;border:0;border-radius:11px;padding:12px 14px;background:var(--accent);color:#061a12;font-weight:900;cursor:pointer}
     .primary:disabled{opacity:.45}
     .quick-locations{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
     .quick-locations button{border:1px solid var(--border);border-radius:999px;padding:7px 9px;background:rgba(255,255,255,.02);color:var(--muted);font-size:10px;cursor:pointer}
@@ -70,8 +70,8 @@
     .method-note{margin-top:15px;padding:12px;border-radius:12px;border:1px solid rgba(103,183,255,.14);background:rgba(103,183,255,.035);color:var(--muted);font-size:10px;line-height:1.5}
     .empty{padding:45px 12px;text-align:center;color:var(--muted)}
     footer{max-width:1140px;margin:auto;padding:28px 32px;color:var(--muted);font-size:11px;border-top:1px solid var(--border)}
-    @media(max-width:820px){.tool-shell{grid-template-columns:1fr}.appliances{grid-template-columns:1fr}}
-    @media(max-width:540px){.section{padding-left:14px;padding-right:14px}.hero{padding-top:45px}.postcode-row{grid-template-columns:1fr}.postcode-row button{width:100%}}
+    @media(max-width:820px){.tool-shell{display:block}.tool-shell>aside{margin-bottom:16px}.appliances{grid-template-columns:1fr}.hero-result{min-height:0}}
+    @media(max-width:540px){.topbar{padding-left:14px;padding-right:14px}.brand{min-width:0}.brand span:last-child{font-size:16px;white-space:nowrap}.section{width:100%;padding-left:14px;padding-right:14px}.hero{padding-top:38px}.hero h1{font-size:42px}.postcode-row{grid-template-columns:1fr}.postcode-row button{width:100%}.panel{padding:17px}.timeline{width:100%;max-width:100%}}
   </style>
 </head>
 <body>
@@ -152,7 +152,7 @@
     </section>
   </main>
 
-  <footer>GB Energy Live v1.5.0 - Data from the official NESO Carbon Intensity API</footer>
+  <footer>GB Energy Live v1.5.1 - Data from the official NESO Carbon Intensity API</footer>
 
   <script>
     const API="https://api.carbonintensity.org.uk";
@@ -160,87 +160,80 @@
     const loadBtn=document.getElementById("loadBtn");
     const timeline=document.getElementById("timeline");
 
-    function cleanPostcode(v){
-      return String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
-    }
+    const cleanPostcode=v=>String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+    const localTime=iso=>new Date(iso).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+    const localDayTime=iso=>new Date(iso).toLocaleString([], {weekday:"short",hour:"2-digit",minute:"2-digit"});
 
-    function apiTime(date){
-      return date.toISOString().slice(0,16)+"Z";
-    }
-
-    function localTime(iso){
-      return new Date(iso).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-    }
-
-    function localDayTime(iso){
-      return new Date(iso).toLocaleString([], {weekday:"short",hour:"2-digit",minute:"2-digit"});
-    }
-
-    function flattenRegional(json){
-      const out=[];
-      const top=Array.isArray(json?.data)?json.data:[];
-      for(const item of top){
-        const regions=Array.isArray(item?.regions)?item.regions:[item];
-        for(const region of regions){
-          out.push({
-            from:item.from||region.from,
-            to:item.to||region.to,
-            regionid:region.regionid,
-            shortname:region.shortname,
-            intensity:region.intensity,
-            generationmix:region.generationmix
-          });
-        }
-      }
-      return out;
+    function roundedApiTime(){
+      const d=new Date();
+      d.setUTCSeconds(0,0);
+      d.setUTCMinutes(d.getUTCMinutes()<30?0:30);
+      return d.toISOString().slice(0,16)+"Z";
     }
 
     async function getJson(url){
-      const r=await fetch(url,{headers:{Accept:"application/json"}});
-      if(!r.ok)throw new Error(`API ${r.status}`);
+      const r=await fetch(url,{headers:{Accept:"application/json"},cache:"no-store"});
+      if(!r.ok) throw new Error(`NESO API ${r.status}`);
       return r.json();
     }
 
-    function forecastValue(row){
-      return Number(row?.intensity?.forecast);
+    // NESO regional responses can contain a region object whose own `data`
+    // array contains the half-hour periods. Walk the response recursively
+    // and collect only objects that actually have from/to + intensity.
+    function collectPeriods(node, meta={}, out=[]){
+      if(Array.isArray(node)){
+        node.forEach(x=>collectPeriods(x,meta,out));
+        return out;
+      }
+      if(!node || typeof node!=="object") return out;
+
+      const nextMeta={
+        regionid: node.regionid ?? meta.regionid,
+        shortname: node.shortname ?? meta.shortname,
+        dnoregion: node.dnoregion ?? meta.dnoregion
+      };
+
+      if(node.from && node.to && node.intensity && typeof node.intensity==="object"){
+        out.push({...node,...nextMeta});
+      }
+
+      if(node.data) collectPeriods(node.data,nextMeta,out);
+      if(node.regions) collectPeriods(node.regions,nextMeta,out);
+      return out;
     }
 
-    function indexLabel(row){
-      return row?.intensity?.index || "unknown";
-    }
+    const forecastValue=row=>Number(row?.intensity?.forecast);
+    const indexLabel=row=>row?.intensity?.index || "unknown";
 
-    function bestWindow(rows, halfHours){
-      if(rows.length<halfHours)return null;
+    function bestWindow(rows,count){
+      if(rows.length<count)return null;
       let best=null;
-      for(let i=0;i<=rows.length-halfHours;i++){
-        const window=rows.slice(i,i+halfHours);
-        const vals=window.map(forecastValue);
+      for(let i=0;i<=rows.length-count;i++){
+        const w=rows.slice(i,i+count), vals=w.map(forecastValue);
         if(vals.some(v=>!Number.isFinite(v)))continue;
         const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-        if(!best||avg<best.avg)best={avg,start:window[0].from,end:window[window.length-1].to,index:i,count:halfHours};
+        if(!best||avg<best.avg)best={avg,start:w[0].from,end:w[w.length-1].to,index:i,count};
       }
       return best;
     }
 
     function formatWindow(w){
-      if(!w)return "-";
-      return `${localDayTime(w.start)} - ${localTime(w.end)}`;
+      return w ? `${localDayTime(w.start)} â ${localTime(w.end)}` : "â";
     }
 
     function render(rows,region){
-      const now=rows[0];
-      document.getElementById("currentIntensity").textContent=Number.isFinite(forecastValue(now))?`${forecastValue(now)} gCO2/kWh`:"-";
-      document.getElementById("currentIndex").textContent=indexLabel(now);
-      document.getElementById("regionName").textContent=region||"Your region";
+      rows=rows.filter(r=>r.from && Number.isFinite(forecastValue(r)))
+               .sort((a,b)=>Date.parse(a.from)-Date.parse(b.from));
+
+      const now=rows[0], best3=bestWindow(rows,6), best2=bestWindow(rows,4), best6=bestWindow(rows,12);
+      document.getElementById("currentIntensity").textContent=now?`${forecastValue(now)} gCO2/kWh`:"â";
+      document.getElementById("currentIndex").textContent=now?indexLabel(now):"Unavailable";
+      document.getElementById("regionName").textContent=region||rows[0]?.shortname||"Your region";
       document.getElementById("updatedText").textContent=`Loaded ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
 
-      const best3=bestWindow(rows,6);
-      const best2=bestWindow(rows,4);
-      const best6=bestWindow(rows,12);
-
       if(best3){
-        document.getElementById("bestHeadline").textContent=`Best time: ${localDayTime(best3.start)}`;
-        document.getElementById("bestCopy").textContent=`This 3-hour period averages about ${Math.round(best3.avg)} gCO2/kWh, the lowest continuous window in the forecast.`;
+        document.getElementById("bestHeadline").textContent=`Greenest window: ${localDayTime(best3.start)}`;
+        document.getElementById("bestCopy").textContent=`The lowest-carbon continuous 3-hour period averages about ${Math.round(best3.avg)} gCO2/kWh.`;
         const bw=document.getElementById("bestWindow");
         bw.style.display="inline-flex";
         bw.querySelector("strong").textContent=formatWindow(best3);
@@ -250,20 +243,15 @@
       document.getElementById("dishTime").textContent=formatWindow(best2);
       document.getElementById("evTime").textContent=formatWindow(best6);
 
-      const day=rows.slice(0,48);
-      const vals=day.map(forecastValue).filter(Number.isFinite);
-      const min=Math.min(...vals),max=Math.max(...vals);
-      const range=Math.max(1,max-min);
-
+      const day=rows.slice(0,48), vals=day.map(forecastValue);
+      const min=Math.min(...vals), max=Math.max(...vals), range=Math.max(1,max-min);
       timeline.innerHTML=day.map((row,i)=>{
         const v=forecastValue(row);
-        const pct=Number.isFinite(v)?Math.round((1-(v-min)/range)*100):0;
-        const inBest=best3 && i>=best3.index && i<best3.index+best3.count;
+        const pct=Math.max(8,Math.round((1-(v-min)/range)*100));
+        const inBest=best3&&i>=best3.index&&i<best3.index+best3.count;
         return `<div class="slot${inBest?" best":""}">
           <span class="slot-time">${localTime(row.from)}</span>
-          <strong>${Number.isFinite(v)?v:"-"}</strong>
-          <small>gCO2/kWh</small>
-          <small>${indexLabel(row)}</small>
+          <strong>${v}</strong><small>gCO2/kWh</small><small>${indexLabel(row)}</small>
           <div class="bar"><span style="width:${pct}%"></span></div>
         </div>`;
       }).join("");
@@ -271,29 +259,43 @@
 
     async function load(){
       const pc=cleanPostcode(postcode.value);
-      if(!pc){return}
-
+      if(!pc)return;
+      postcode.value=pc;
       loadBtn.disabled=true;
-      loadBtn.textContent="Loading...";
-      timeline.innerHTML='<div class="empty">Loading NESO regional forecast...</div>';
+      loadBtn.textContent="Loadingâ¦";
+      timeline.innerHTML='<div class="empty">Loading NESO regional forecastâ¦</div>';
 
       try{
-        const from=apiTime(new Date());
-        const url=`${API}/regional/intensity/${encodeURIComponent(from)}/fw48h/postcode/${encodeURIComponent(pc)}`;
-        const json=await getJson(url);
-        const rows=flattenRegional(json)
-          .filter(r=>Number.isFinite(forecastValue(r)) && r.from)
-          .sort((a,b)=>Date.parse(a.from)-Date.parse(b.from));
+        // First resolve the outward postcode to NESO's region.
+        const current=await getJson(`${API}/regional/postcode/${encodeURIComponent(pc)}`);
+        const currentPeriods=collectPeriods(current);
+        const regionObj=(Array.isArray(current?.data)?current.data[0]:null)||{};
+        const regionId=regionObj.regionid ?? currentPeriods[0]?.regionid;
+        const regionName=regionObj.shortname || currentPeriods[0]?.shortname || `Postcode ${pc}`;
+        if(!regionId) throw new Error("Postcode did not resolve to a NESO region");
 
-        if(!rows.length)throw new Error("No forecast returned");
+        // Region-ID forecast is more robust than asking the API to resolve the
+        // postcode again inside the forecast endpoint.
+        const from=roundedApiTime();
+        let forecast;
+        try{
+          forecast=await getJson(`${API}/regional/intensity/${encodeURIComponent(from)}/fw48h/regionid/${regionId}`);
+        }catch(e){
+          // Graceful fallback to 24h if the 48h endpoint is temporarily unavailable.
+          forecast=await getJson(`${API}/regional/intensity/${encodeURIComponent(from)}/fw24h/regionid/${regionId}`);
+        }
 
-        const region=rows.find(r=>r.shortname)?.shortname || `Postcode ${pc}`;
-        render(rows,region);
+        const rows=collectPeriods(forecast);
+        if(!rows.length)throw new Error("No forecast periods returned");
+        render(rows,regionName);
       }catch(err){
-        console.error(err);
-        timeline.innerHTML='<div class="empty">We could not load a regional forecast for that postcode. Try the outward code only, such as ST13 or SW1A.</div>';
-        document.getElementById("bestHeadline").textContent="Forecast unavailable";
-        document.getElementById("bestCopy").textContent="The NESO API did not return a usable regional forecast.";
+        console.error("Greenest Time:",err);
+        timeline.innerHTML='<div class="empty">The regional forecast is temporarily unavailable. Please try again shortly.</div>';
+        document.getElementById("currentIntensity").textContent="â";
+        document.getElementById("currentIndex").textContent="Unavailable";
+        document.getElementById("bestHeadline").textContent="Forecast temporarily unavailable";
+        document.getElementById("bestCopy").textContent="We could not retrieve a usable regional forecast from NESO. No estimate has been substituted.";
+        document.getElementById("bestWindow").style.display="none";
       }finally{
         loadBtn.disabled=false;
         loadBtn.textContent="Find green times";
@@ -306,7 +308,7 @@
 
     const mb=document.getElementById("menuBtn"),sm=document.getElementById("siteMenu");
     mb.addEventListener("click",e=>{e.stopPropagation();sm.classList.toggle("open")});
-    document.addEventListener("click",e=>{if(!sm.contains(e.target))sm.classList.remove("open")});
+    document.addEventListener("click",e=>{if(!sm.contains(e.target)&&e.target!==mb)sm.classList.remove("open")});
 
     load();
   </script>
