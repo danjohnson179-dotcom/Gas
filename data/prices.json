@@ -1,0 +1,15 @@
+{
+  "updated": null,
+  "currency": "GBP",
+  "displayUnit": "GBP/MWh",
+  "electricity": {
+    "status": "unavailable",
+    "message": "Waiting for the first GitHub Actions price refresh.",
+    "source": "Elexon Insights"
+  },
+  "gas": {
+    "status": "unavailable",
+    "message": "Waiting for the first GitHub Actions price refresh.",
+    "source": "National Gas Transmission Data Portal"
+  }
+}
