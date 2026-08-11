@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="description" content="Live Great Britain electricity demand, generation mix and wholesale energy market dashboard." />
+  <title>GB Energy Live</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="GB Energy Live home">
+      <span class="bolt">⚡</span>
+      <span>GB Energy Live</span>
+    </a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#overview">Overview</a>
+      <a href="#generation">Generation</a>
+      <a href="#prices">Prices</a>
+      <a href="#about">About</a>
+    </nav>
+    <button id="refreshBtn" class="refresh-btn" type="button">↻ Refresh</button>
+  </header>
+
+  <main>
+    <section id="overview" class="hero section">
+      <div>
+        <p class="eyebrow">GREAT BRITAIN • LIVE ENERGY DASHBOARD</p>
+        <h1>See what is powering Great Britain right now.</h1>
+        <p class="hero-copy">
+          Live electricity demand, generation mix and wholesale market signals in one simple dashboard.
+        </p>
+        <div class="status-row">
+          <span id="liveStatus" class="status-pill"><span class="dot"></span> Connecting to live data</span>
+          <span id="lastUpdated" class="muted">Last updated —</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics section compact">
+      <button class="metric-card clickable" data-scroll="generation" type="button">
+        <span class="metric-label">Current GB electricity demand</span>
+        <strong id="demandValue">—</strong>
+        <span id="demandSub" class="metric-sub">Loading MW</span>
+      </button>
+
+      <button class="metric-card clickable" data-scroll="generation" type="button">
+        <span class="metric-label">Current generation</span>
+        <strong id="generationValue">—</strong>
+        <span id="generationSub" class="metric-sub">Loading MW</span>
+      </button>
+
+      <button class="metric-card clickable" data-scroll="prices" type="button">
+        <span class="metric-label">Wholesale electricity</span>
+        <strong id="powerPrice">—</strong>
+        <span id="powerPriceSub" class="metric-sub">Latest market index price</span>
+      </button>
+
+      <button class="metric-card clickable" data-scroll="prices" type="button">
+        <span class="metric-label">Wholesale gas</span>
+        <strong id="gasPrice">Live source</strong>
+        <span id="gasPriceSub" class="metric-sub">National Gas market data</span>
+      </button>
+    </section>
+
+    <section id="generation" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">GENERATION</p>
+          <h2>What is powering the grid?</h2>
+        </div>
+        <span id="generationTimestamp" class="muted">Latest available interval</span>
+      </div>
+
+      <div class="content-grid">
+        <article class="panel">
+          <div class="panel-title-row">
+            <h3>Generation mix</h3>
+            <span id="mixTotal" class="badge">— GW</span>
+          </div>
+          <div id="fuelMix" class="fuel-list" aria-live="polite">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+          </div>
+        </article>
+
+        <article class="panel explainer-panel">
+          <p class="eyebrow">AT A GLANCE</p>
+          <h3 id="mixHeadline">Reading the grid…</h3>
+          <p id="mixExplanation">
+            We are loading the latest published generation figures from Elexon.
+          </p>
+          <div class="mini-stats">
+            <div><span>Low-carbon share</span><strong id="lowCarbonShare">—</strong></div>
+            <div><span>Fossil share</span><strong id="fossilShare">—</strong></div>
+            <div><span>Largest source</span><strong id="largestSource">—</strong></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="prices" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">WHOLESALE MARKETS</p>
+          <h2>Energy price signals</h2>
+        </div>
+      </div>
+
+      <div class="price-grid">
+        <article class="panel price-panel">
+          <span class="price-icon">⚡</span>
+          <p class="metric-label">Electricity market index</p>
+          <strong id="powerPriceLarge" class="price-big">—</strong>
+          <p id="powerPriceExplain" class="muted">Loading the latest Elexon market index data.</p>
+          <div class="info-box">
+            £/MWh means pounds per megawatt-hour traded in the wholesale market. It is not the same as your household unit rate.
+          </div>
+        </article>
+
+        <article class="panel price-panel">
+          <span class="price-icon">🔥</span>
+          <p class="metric-label">Great Britain gas market</p>
+          <strong class="price-big">National Gas</strong>
+          <p class="muted">
+            National Gas publishes current Gas Day supply, demand, linepack and price information.
+          </p>
+          <a class="primary-link" href="https://data.nationalgas.com/reports/gas-day-summary" target="_blank" rel="noopener">
+            Open live gas price ↗
+          </a>
+          <div class="info-box">
+            This link is used rather than inventing a gas figure when the National Gas browser API does not expose a stable CORS-enabled price endpoint.
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ABOUT THE DATA</p>
+          <h2>Transparent by design</h2>
+        </div>
+      </div>
+      <div class="about-grid">
+        <article class="panel">
+          <h3>Electricity</h3>
+          <p>
+            Live generation and demand are requested from Elexon's public Insights API. No API key is embedded in this website.
+          </p>
+        </article>
+        <article class="panel">
+          <h3>Wholesale prices</h3>
+          <p>
+            Electricity uses Elexon's Market Index Data. Gas links directly to National Gas's current Gas Day market information.
+          </p>
+        </article>
+        <article class="panel">
+          <h3>Important</h3>
+          <p>
+            Live energy datasets can be delayed, revised or temporarily unavailable. The dashboard shows a clear data status instead of fabricating values.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <button id="chatLauncher" class="chat-launcher" type="button" aria-label="Open energy assistant">
+    <span>✦</span> Ask the data
+  </button>
+
+  <aside id="chatPanel" class="chat-panel" aria-hidden="true">
+    <div class="chat-header">
+      <div>
+        <strong>Energy Assistant</strong>
+        <small>Explains this dashboard</small>
+      </div>
+      <button id="chatClose" class="icon-btn" type="button" aria-label="Close chat">×</button>
+    </div>
+    <div id="chatMessages" class="chat-messages" aria-live="polite">
+      <div class="message bot">
+        Hi — ask me what is powering Britain, whether demand is high, what the wholesale electricity price means, or how to read the dashboard.
+      </div>
+    </div>
+    <div class="quick-questions">
+      <button type="button">What is powering GB?</button>
+      <button type="button">Is demand high?</button>
+      <button type="button">Explain the price</button>
+    </div>
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" placeholder="Ask about the data…" autocomplete="off" />
+      <button id="chatSend" type="button">Send</button>
+    </div>
+  </aside>
+
+  <footer>
+    <span>GB Energy Live</span>
+    <span>Public data • Elexon • National Gas</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
