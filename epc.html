@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07111f">
   <meta name="description" content="Estimate your home's EPC rating with six simple questions.">
-  <title>EPC Estimate Beta | GB Energy Live</title>
+  <title>EPC Estimate | GB Energy Live</title>
 
   <style>
     :root {
@@ -547,12 +547,23 @@
       <a href="epc.html" class="active">EPC Estimate</a>
     </nav>
 
-    <a class="back-btn" href="index.html">Back</a>
+    <div class="menu-wrap" style="position:relative">
+      <button id="menuBtn" class="back-btn" type="button" style="width:46px;height:42px;padding:0;display:grid;place-content:center;gap:4px" aria-label="Open menu">
+        <span style="display:block;width:18px;height:2px;background:currentColor"></span>
+        <span style="display:block;width:18px;height:2px;background:currentColor"></span>
+        <span style="display:block;width:18px;height:2px;background:currentColor"></span>
+      </button>
+      <div id="siteMenu" style="position:absolute;right:0;top:50px;width:280px;padding:10px;border-radius:16px;border:1px solid var(--border);background:rgba(8,20,35,.99);box-shadow:var(--shadow);display:none;z-index:100">
+        <a href="index.html" style="display:block;padding:11px;border-radius:10px;text-decoration:none"><strong style="display:block">Energy dashboard</strong><small style="color:var(--muted)">Live GB energy data</small></a>
+        <a href="epc.html" style="display:block;padding:11px;border-radius:10px;text-decoration:none"><strong style="display:block">EPC Estimate - Beta</strong><small style="color:var(--muted)">Home energy estimator</small></a>
+        <a href="tariffs.html" style="display:block;padding:11px;border-radius:10px;text-decoration:none"><strong style="display:block">Tariff Compare - Beta</strong><small style="color:var(--muted)">Live tariff comparison</small></a>
+      </div>
+    </div>
   </header>
 
   <main>
     <section class="section hero">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;"><p class="eyebrow" style="margin:0;">HOME ENERGY TOOL</p><span style="display:inline-flex;padding:6px 9px;border-radius:999px;background:#5fe0a7;color:#061a12;font-size:10px;font-weight:900;letter-spacing:.08em;">BETA</span><span style="display:inline-flex;padding:6px 9px;border-radius:999px;border:1px solid rgba(103,183,255,.22);background:rgba(103,183,255,.07);color:#67b7ff;font-size:10px;font-weight:900;letter-spacing:.08em;">NEW FEATURE</span></div>
+      <p class="eyebrow">HOME ENERGY TOOL</p>
       <h1>Estimate your home's <span class="accent">EPC rating.</span></h1>
       <p class="hero-copy">
         Answer six simple questions and get a quick EPC-style score, likely rating band,
@@ -921,6 +932,14 @@
 
     updateProgress();
     updatePreview();
+  </script>
+<script>
+    (function(){
+      const b=document.getElementById("menuBtn"),m=document.getElementById("siteMenu");
+      if(!b||!m)return;
+      b.addEventListener("click",(e)=>{e.stopPropagation();m.style.display=m.style.display==="block"?"none":"block"});
+      document.addEventListener("click",(e)=>{if(!m.contains(e.target)&&e.target!==b)m.style.display="none"});
+    })();
   </script>
 </body>
 </html>
