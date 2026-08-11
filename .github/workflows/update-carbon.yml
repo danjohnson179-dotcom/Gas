@@ -1,0 +1,86 @@
+name: Update carbon forecast
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/update-carbon.mjs"
+      - ".github/workflows/update-carbon.yml"
+  schedule:
+    - cron: "8,38 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: carbon-forecast-update
+  cancel-in-progress: false
+
+jobs:
+  update-carbon:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Refresh NESO carbon forecast
+        run: node scripts/update-carbon.mjs
+
+      - name: Publish carbon.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -e
+
+          FILE="data/carbon.json"
+          CONTENT="$(base64 -w 0 "$FILE")"
+
+          for attempt in 1 2 3 4 5; do
+            echo "Publish attempt $attempt"
+
+            SHA="$(
+              gh api "repos/$GH_REPO/contents/$FILE?ref=main" \
+                --jq '.sha' 2>/dev/null || true
+            )"
+
+            if [ -n "$SHA" ]; then
+              if gh api \
+                --method PUT \
+                "repos/$GH_REPO/contents/$FILE" \
+                -f message="data: refresh carbon forecast" \
+                -f content="$CONTENT" \
+                -f sha="$SHA" \
+                -f branch="main"
+              then
+                echo "carbon.json published successfully"
+                exit 0
+              fi
+            else
+              if gh api \
+                --method PUT \
+                "repos/$GH_REPO/contents/$FILE" \
+                -f message="data: create carbon forecast" \
+                -f content="$CONTENT" \
+                -f branch="main"
+              then
+                echo "carbon.json created successfully"
+                exit 0
+              fi
+            fi
+
+            echo "Publish conflicted. Waiting before retry..."
+            sleep 3
+          done
+
+          echo "Failed to publish carbon.json after 5 attempts"
+          exit 1
