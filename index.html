@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Live Great Britain electricity demand, generation mix and wholesale energy prices.">
+  <title>GB Energy Live</title>
+  <link rel="stylesheet" href="style.css?v=1.1.0">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="GB Energy Live home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M13.2 2 5 13h6l-.8 9L19 10h-6.2l.4-8Z"/></svg>
+      </span>
+      <span>GB Energy Live</span>
+    </a>
+
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#overview">Overview</a>
+      <a href="#generation">Generation</a>
+      <a href="#prices">Prices</a>
+      <a href="#about">About</a>
+    </nav>
+
+    <button id="refreshBtn" class="refresh-btn" type="button">Refresh</button>
+  </header>
+
+  <main>
+    <section id="overview" class="section hero">
+      <p class="eyebrow">GREAT BRITAIN - LIVE ENERGY DASHBOARD</p>
+      <h1>See what is powering Great Britain right now.</h1>
+      <p class="hero-copy">Live electricity demand, generation mix and wholesale energy market signals in one simple dashboard.</p>
+
+      <div class="status-row">
+        <span id="liveStatus" class="status-pill"><span class="dot"></span> Connecting to live data</span>
+        <span id="lastUpdated" class="muted">Last updated -</span>
+      </div>
+    </section>
+
+    <section class="section compact metrics">
+      <button class="metric-card clickable" data-scroll="generation" type="button">
+        <span class="metric-label">Current GB electricity demand</span>
+        <strong id="demandValue">-</strong>
+        <span id="demandSub" class="metric-sub">Loading MW</span>
+      </button>
+
+      <button class="metric-card clickable" data-scroll="generation" type="button">
+        <span class="metric-label">Current generation</span>
+        <strong id="generationValue">-</strong>
+        <span id="generationSub" class="metric-sub">Loading MW</span>
+      </button>
+
+      <button class="metric-card clickable" data-scroll="prices" type="button">
+        <span class="metric-label">Wholesale electricity</span>
+        <strong id="powerPrice">-</strong>
+        <span id="powerPriceSub" class="metric-sub">Latest wholesale price</span>
+      </button>
+
+      <button class="metric-card clickable" data-scroll="prices" type="button">
+        <span class="metric-label">Wholesale gas</span>
+        <strong id="gasPrice">-</strong>
+        <span id="gasPriceSub" class="metric-sub">Latest wholesale price</span>
+      </button>
+    </section>
+
+    <section id="generation" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">GENERATION</p>
+          <h2>What is powering the grid?</h2>
+        </div>
+        <span id="generationTimestamp" class="muted">Latest available interval</span>
+      </div>
+
+      <div class="content-grid">
+        <article class="panel">
+          <div class="panel-title-row">
+            <h3>Generation mix</h3>
+            <span id="mixTotal" class="badge">- GW</span>
+          </div>
+          <div id="fuelMix" class="fuel-list" aria-live="polite">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+          </div>
+        </article>
+
+        <article class="panel explainer-panel">
+          <p class="eyebrow">AT A GLANCE</p>
+          <h3 id="mixHeadline">Reading the grid...</h3>
+          <p id="mixExplanation">Loading the latest published generation figures from Elexon.</p>
+          <div class="mini-stats">
+            <div><span>Low-carbon share</span><strong id="lowCarbonShare">-</strong></div>
+            <div><span>Fossil share</span><strong id="fossilShare">-</strong></div>
+            <div><span>Largest source</span><strong id="largestSource">-</strong></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="prices" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">WHOLESALE MARKETS</p>
+          <h2>Energy price signals</h2>
+        </div>
+      </div>
+
+      <div class="price-grid">
+        <article class="panel price-panel">
+          <div class="price-symbol electricity-symbol" aria-hidden="true">E</div>
+          <p class="metric-label">Electricity market index</p>
+          <strong id="powerPriceLarge" class="price-big">-</strong>
+          <p id="powerPriceExplain" class="muted">Loading the latest Elexon market index data.</p>
+          <div class="info-box">
+            Both wholesale price cards are shown in GBP per megawatt-hour (GBP/MWh), making electricity and gas directly comparable.
+          </div>
+        </article>
+
+        <article class="panel price-panel">
+          <div class="price-symbol gas-symbol" aria-hidden="true">G</div>
+          <p class="metric-label">Great Britain gas market</p>
+          <strong id="gasPriceLarge" class="price-big">-</strong>
+          <p id="gasPriceExplain" class="muted">Loading the latest National Gas market price in GBP/MWh.</p>
+          <div class="gas-meta">
+            <span id="gasPriceType">Official National Gas data</span>
+            <span id="gasUpdated">-</span>
+          </div>
+          <a class="primary-link" href="https://data.nationalgas.com/reports/gas-day-summary" target="_blank" rel="noopener">Open National Gas source</a>
+          <div class="info-box">
+            National Gas publishes UK gas balancing prices through its official REST API. This site converts the official pence-per-therm value to GBP/MWh.
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ABOUT THE DATA</p>
+          <h2>Transparent by design</h2>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <article class="panel">
+          <h3>Electricity</h3>
+          <p>Generation, demand and market-index prices are requested from Elexon's public Insights service.</p>
+        </article>
+        <article class="panel">
+          <h3>Gas</h3>
+          <p>National Gas is the source for the GB gas market figure. Its pence-per-therm price is converted to GBP/MWh so it can be compared directly with wholesale electricity.</p>
+        </article>
+        <article class="panel">
+          <h3>Data quality</h3>
+          <p>Energy datasets can be delayed or temporarily unavailable. This site shows feed status instead of inventing missing live values.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <button id="chatLauncher" class="chat-launcher" type="button" aria-label="Open energy assistant">Ask the data</button>
+
+  <aside id="chatPanel" class="chat-panel" aria-hidden="true">
+    <div class="chat-header">
+      <div>
+        <strong>Energy Assistant</strong>
+        <small>Explains this dashboard</small>
+      </div>
+      <button id="chatClose" class="icon-btn" type="button" aria-label="Close chat">X</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages" aria-live="polite">
+      <div class="message bot">Ask me what is powering Britain, whether demand is high, or what the wholesale electricity and gas prices mean.</div>
+    </div>
+
+    <div class="quick-questions">
+      <button type="button">What is powering GB?</button>
+      <button type="button">Is demand high?</button>
+      <button type="button">Explain gas price</button>
+    </div>
+
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" placeholder="Ask about the data..." autocomplete="off">
+      <button id="chatSend" type="button">Send</button>
+    </div>
+  </aside>
+
+  <footer>
+    <span>GB Energy Live v1.1.0</span>
+    <span>Public energy data - Elexon and National Gas</span>
+  </footer>
+
+  <script src="app.js?v=1.1.0"></script>
+</body>
+</html>
