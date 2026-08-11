@@ -1,37 +1,48 @@
 import fs from "node:fs/promises";
-import { chromium } from "playwright";
 
 const ELEXON_API = "https://data.elexon.co.uk/bmrs/api/v1";
-const NATIONAL_GAS = "https://data.nationalgas.com/reports/gas-day-summary";
+const NATIONAL_GAS_API = "https://api.nationalgas.com/operationaldata/v1";
 const OUTPUT = new URL("../data/prices.json", import.meta.url);
 
-// 1 therm = 29.307107 kWh = 0.029307107 MWh.
-// A quote in pence/therm becomes GBP/MWh via:
-// (pence / 100) / 0.029307107
 const THERM_MWH = 0.029307107;
 
 function pencePerThermToGBPPerMWh(value) {
   return (Number(value) / 100) / THERM_MWH;
 }
 
-function clean(value) {
-  return String(value || "").replace(/\s+/g, " ").trim();
-}
-
 function rowsFrom(value) {
   if (Array.isArray(value)) return value;
   if (!value || typeof value !== "object") return [];
-
   for (const key of ["data", "items", "results", "result"]) {
     if (Array.isArray(value[key])) return value[key];
   }
-
   return [];
 }
 
-function numeric(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+function finiteNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function isoDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      Accept: "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`${response.status} ${response.statusText}: ${text.slice(0, 250)}`);
+  }
+
+  return response.json();
 }
 
 async function loadPrevious() {
@@ -42,169 +53,228 @@ async function loadPrevious() {
   }
 }
 
+function validTimestamp(value) {
+  const time = Date.parse(value || "");
+  return Number.isFinite(time) ? time : 0;
+}
+
 async function fetchElectricityPrice() {
   const now = new Date();
-  const fromDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
   const url = new URL(`${ELEXON_API}/balancing/pricing/market-index`);
-  url.searchParams.set("from", fromDate.toISOString());
+  url.searchParams.set("from", from.toISOString());
   url.searchParams.set("to", now.toISOString());
 
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" }
-  });
-
-  if (!response.ok) {
-    throw new Error(`Elexon returned HTTP ${response.status}`);
-  }
-
-  const json = await response.json();
+  const json = await fetchJson(url);
   const rows = rowsFrom(json);
 
-  const candidates = rows
-    .map((row) => ({
-      price: numeric(row.price ?? row.marketIndexPrice ?? row.marketPrice),
-      time: row.startTime ?? row.publishTime ?? row.settlementDate ?? "",
-      provider: row.dataProvider ?? row.provider ?? row.marketIndexDataProvider ?? ""
-    }))
-    .filter((row) => Number.isFinite(row.price))
-    .sort((a, b) => String(a.time).localeCompare(String(b.time)));
+  const candidates = rows.map((row) => {
+    const price = finiteNumber(row.price ?? row.marketIndexPrice);
+    const volume = finiteNumber(row.volume ?? row.marketIndexVolume);
+    const provider = String(
+      row.dataProvider ??
+      row.provider ??
+      row.marketIndexDataProvider ??
+      ""
+    ).toUpperCase();
+
+    const timestamp =
+      row.startTime ??
+      row.publishTime ??
+      row.settlementDate ??
+      row.createdDate ??
+      "";
+
+    return { price, volume, provider, timestamp };
+  }).filter((row) =>
+    Number.isFinite(row.price) &&
+    Number.isFinite(row.volume) &&
+    row.volume > 0 &&
+    validTimestamp(row.timestamp) > 0
+  );
 
   if (!candidates.length) {
-    throw new Error("Elexon returned no usable market-index prices");
+    throw new Error("No Elexon market-index record with positive traded volume was returned.");
   }
 
-  const latest = candidates[candidates.length - 1];
+  // Prefer APX if there is a current APX observation, then use the latest timestamp.
+  candidates.sort((a, b) => {
+    const aPreferred = a.provider.includes("APX") ? 1 : 0;
+    const bPreferred = b.provider.includes("APX") ? 1 : 0;
+
+    if (aPreferred !== bPreferred) return bPreferred - aPreferred;
+    return validTimestamp(b.timestamp) - validTimestamp(a.timestamp);
+  });
+
+  const latest = candidates[0];
+
+  // Reject stale observations older than 12 hours.
+  const ageMs = Date.now() - validTimestamp(latest.timestamp);
+  if (ageMs > 12 * 60 * 60 * 1000) {
+    throw new Error(`Latest valid Elexon price is stale: ${latest.timestamp}`);
+  }
 
   return {
     status: "ok",
-    gbpPerMWh: latest.price,
+    gbpPerMWh: Number(latest.price.toFixed(2)),
+    originalPrice: latest.price,
     originalUnit: "GBP/MWh",
     provider: latest.provider || "Elexon Market Index Data",
+    volumeMWh: Number(latest.volume.toFixed(3)),
+    observationTime: latest.timestamp,
     source: "Elexon Insights",
     sourceUrl: "https://bmrs.elexon.co.uk/market-index-prices"
   };
 }
 
-function findGasPriceInText(text) {
-  const normalized = clean(text);
-
-  const patterns = [
-    {
-      label: "System Average Price",
-      regex: /system average price.{0,160}?(-?\d+(?:\.\d+)?)\s*(?:p\/therm|pence\/therm|p\/th)/i
-    },
-    {
-      label: "SAP",
-      regex: /\bSAP\b.{0,160}?(-?\d+(?:\.\d+)?)\s*(?:p\/therm|pence\/therm|p\/th)/i
-    },
-    {
-      label: "Weighted Average Price",
-      regex: /weighted average price.{0,160}?(-?\d+(?:\.\d+)?)\s*(?:p\/therm|pence\/therm|p\/th)/i
-    },
-    {
-      label: "WAP",
-      regex: /\bWAP\b.{0,160}?(-?\d+(?:\.\d+)?)\s*(?:p\/therm|pence\/therm|p\/th)/i
-    }
-  ];
-
-  for (const item of patterns) {
-    const match = normalized.match(item.regex);
-    if (match) {
-      return {
-        label: item.label,
-        pencePerTherm: Number(match[1])
-      };
-    }
+function flattenCatalogue(node, output = []) {
+  if (Array.isArray(node)) {
+    for (const item of node) flattenCatalogue(item, output);
+    return output;
   }
 
-  // Fallback for CSV/XML/table output where the descriptor is separated.
-  const generic = normalized.match(/(-?\d+(?:\.\d+)?)\s*(?:p\/therm|pence\/therm|p\/th)/i);
+  if (!node || typeof node !== "object") return output;
 
-  if (generic) {
-    return {
-      label: "National Gas trading price",
-      pencePerTherm: Number(generic[1])
-    };
+  if (node.publicationId && node.name) {
+    output.push({
+      publicationId: String(node.publicationId),
+      name: String(node.name),
+      parent: String(node.parent || "")
+    });
   }
 
-  return null;
+  for (const value of Object.values(node)) {
+    if (value && typeof value === "object") flattenCatalogue(value, output);
+  }
+
+  return output;
+}
+
+function scoreGasPriceItem(item) {
+  const name = `${item.name} ${item.parent}`.toLowerCase();
+  let score = 0;
+
+  if (name.includes("system average price")) score += 100;
+  if (/\bsap\b/.test(name)) score += 80;
+  if (name.includes("average price")) score += 50;
+  if (name.includes("price")) score += 25;
+  if (name.includes("balancing")) score += 15;
+  if (name.includes("system")) score += 10;
+
+  // Avoid clearly unrelated price data.
+  if (name.includes("capacity")) score -= 50;
+  if (name.includes("entry")) score -= 15;
+  if (name.includes("exit")) score -= 15;
+
+  return score;
+}
+
+async function discoverGasPricePublication() {
+  const catalogue = await fetchJson(
+    `${NATIONAL_GAS_API}/publications/catalogue`
+  );
+
+  const entries = flattenCatalogue(catalogue)
+    .map((item) => ({ ...item, score: scoreGasPriceItem(item) }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  if (!entries.length || entries[0].score < 50) {
+    throw new Error("Could not identify a System Average Price publication in the National Gas catalogue.");
+  }
+
+  console.log("National Gas price catalogue candidate:", entries[0]);
+
+  return entries[0];
 }
 
 async function fetchGasPrice() {
-  const browser = await chromium.launch({ headless: true });
+  const publication = await discoverGasPricePublication();
 
-  try {
-    const context = await browser.newContext({
-      acceptDownloads: true,
-      viewport: { width: 1440, height: 1000 }
-    });
+  const today = new Date();
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const page = await context.newPage();
+  const body = {
+    fromDate: isoDate(yesterday),
+    toDate: isoDate(today),
+    publicationIds: [publication.publicationId],
+    latestValue: "Y"
+  };
 
-    await page.goto(NATIONAL_GAS, {
-      waitUntil: "domcontentloaded",
-      timeout: 90000
-    });
-
-    await page.waitForTimeout(8000);
-
-    let found = findGasPriceInText(await page.locator("body").innerText());
-
-    if (!found) {
-      const possibleLinks = page.locator("a, button");
-      const count = await possibleLinks.count();
-
-      for (let i = 0; i < count && !found; i += 1) {
-        const node = possibleLinks.nth(i);
-        const text = clean(await node.innerText().catch(() => ""));
-
-        if (!/download as csv|download.*csv|csv/i.test(text)) continue;
-
-        try {
-          const downloadPromise = page.waitForEvent("download", { timeout: 10000 });
-          await node.click({ timeout: 10000 });
-          const download = await downloadPromise;
-          const path = await download.path();
-
-          if (path) {
-            const fileText = await fs.readFile(path, "utf8");
-            found = findGasPriceInText(fileText);
-          }
-        } catch {
-          // Some links navigate directly rather than firing a browser download.
-          const href = await node.getAttribute("href").catch(() => null);
-
-          if (href) {
-            const response = await context.request.get(new URL(href, NATIONAL_GAS).href, {
-              timeout: 30000
-            });
-
-            if (response.ok()) {
-              found = findGasPriceInText(await response.text());
-            }
-          }
-        }
-      }
+  const response = await fetchJson(
+    `${NATIONAL_GAS_API}/publications/gasday`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
     }
+  );
 
-    if (!found || !Number.isFinite(found.pencePerTherm)) {
-      throw new Error("No usable National Gas pence-per-therm price was found");
+  const groups = Array.isArray(response) ? response : rowsFrom(response);
+
+  const values = [];
+
+  for (const group of groups) {
+    const publications = Array.isArray(group.publications)
+      ? group.publications
+      : [];
+
+    for (const item of publications) {
+      const value = finiteNumber(item.value);
+
+      if (!Number.isFinite(value)) continue;
+
+      values.push({
+        pencePerTherm: value,
+        applicableAt: item.applicableAt || "",
+        applicableFor: item.applicableFor || "",
+        generatedTimeStamp: item.generatedTimeStamp || item.createdDate || ""
+      });
     }
-
-    return {
-      status: "ok",
-      gbpPerMWh: Number(pencePerThermToGBPPerMWh(found.pencePerTherm).toFixed(2)),
-      pencePerTherm: Number(found.pencePerTherm.toFixed(3)),
-      originalUnit: "p/therm",
-      label: found.label,
-      source: "National Gas Transmission Data Portal",
-      sourceUrl: NATIONAL_GAS,
-      conversion: "GBP/MWh = (pencePerTherm / 100) / 0.029307107"
-    };
-  } finally {
-    await browser.close();
   }
+
+  if (!values.length) {
+    throw new Error(
+      `National Gas publication ${publication.publicationId} returned no numeric values.`
+    );
+  }
+
+  values.sort((a, b) => {
+    const aTime = validTimestamp(a.generatedTimeStamp || a.applicableAt);
+    const bTime = validTimestamp(b.generatedTimeStamp || b.applicableAt);
+    return bTime - aTime;
+  });
+
+  const latest = values[0];
+
+  // Basic sanity guard for pence/therm. It still allows highly stressed markets.
+  if (latest.pencePerTherm <= -100 || latest.pencePerTherm > 2000) {
+    throw new Error(
+      `National Gas returned an implausible p/therm value: ${latest.pencePerTherm}`
+    );
+  }
+
+  return {
+    status: "ok",
+    gbpPerMWh: Number(
+      pencePerThermToGBPPerMWh(latest.pencePerTherm).toFixed(2)
+    ),
+    pencePerTherm: Number(latest.pencePerTherm.toFixed(3)),
+    originalUnit: "p/therm",
+    publicationId: publication.publicationId,
+    publicationName: publication.name,
+    observationTime:
+      latest.generatedTimeStamp ||
+      latest.applicableAt ||
+      latest.applicableFor,
+    source: "National Gas Transmission REST API",
+    sourceUrl: "https://data.nationalgas.com/apis/rest-apis",
+    conversion:
+      "GBP/MWh = (pencePerTherm / 100) / 0.029307107"
+  };
 }
 
 const previous = await loadPrevious();
@@ -214,14 +284,17 @@ let gas;
 
 try {
   electricity = await fetchElectricityPrice();
-  console.log(`Electricity: GBP ${electricity.gbpPerMWh}/MWh`);
+  console.log(
+    `Electricity: GBP ${electricity.gbpPerMWh}/MWh from ${electricity.provider}, volume ${electricity.volumeMWh} MWh`
+  );
 } catch (error) {
   console.error("Electricity update failed:", error.message);
 
   electricity = previous.electricity?.status === "ok"
     ? {
         ...previous.electricity,
-        warning: `Refresh failed: ${error.message}`
+        stale: true,
+        refreshWarning: error.message
       }
     : {
         status: "unavailable",
@@ -232,19 +305,22 @@ try {
 
 try {
   gas = await fetchGasPrice();
-  console.log(`Gas: ${gas.pencePerTherm} p/therm = GBP ${gas.gbpPerMWh}/MWh`);
+  console.log(
+    `Gas: ${gas.pencePerTherm} p/therm = GBP ${gas.gbpPerMWh}/MWh`
+  );
 } catch (error) {
   console.error("Gas update failed:", error.message);
 
   gas = previous.gas?.status === "ok"
     ? {
         ...previous.gas,
-        warning: `Refresh failed: ${error.message}`
+        stale: true,
+        refreshWarning: error.message
       }
     : {
         status: "unavailable",
         message: error.message,
-        source: "National Gas Transmission Data Portal"
+        source: "National Gas Transmission REST API"
       };
 }
 
@@ -252,9 +328,15 @@ const payload = {
   updated: new Date().toISOString(),
   currency: "GBP",
   displayUnit: "GBP/MWh",
+  version: "1.0.3",
   electricity,
   gas
 };
 
-await fs.writeFile(OUTPUT, JSON.stringify(payload, null, 2) + "\n", "utf8");
+await fs.writeFile(
+  OUTPUT,
+  JSON.stringify(payload, null, 2) + "\n",
+  "utf8"
+);
+
 console.log("Wrote data/prices.json");
