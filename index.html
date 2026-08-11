@@ -7,7 +7,219 @@
   <meta name="theme-color" content="#07111f">
   <meta name="description" content="Live Great Britain electricity demand, generation mix and wholesale energy prices.">
   <title>GB Energy Live</title>
-  <link rel="stylesheet" href="style.css?v=1.2.0">
+  <link rel="stylesheet" href="style.css?v=1.3.2">
+
+  <style>
+    .beta-feature-section {
+      padding-top: 28px;
+      padding-bottom: 34px;
+    }
+
+    .beta-feature-card {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(220px, .65fr);
+      gap: 24px;
+      align-items: center;
+      min-height: 300px;
+      padding: clamp(24px, 4vw, 42px);
+      border: 1px solid rgba(95,224,167,.22);
+      border-radius: 26px;
+      text-decoration: none;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 85% 25%, rgba(95,224,167,.14), transparent 26rem),
+        linear-gradient(135deg, rgba(16,34,56,.96), rgba(8,22,37,.94));
+      box-shadow: 0 26px 80px rgba(0,0,0,.28);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .beta-feature-card:hover,
+    .beta-feature-card:focus-visible {
+      transform: translateY(-3px);
+      border-color: rgba(95,224,167,.48);
+      box-shadow: 0 30px 95px rgba(0,0,0,.34);
+      outline: none;
+    }
+
+    .beta-feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(120deg, rgba(255,255,255,.045), transparent 35%);
+    }
+
+    .beta-feature-copy {
+      position: relative;
+      z-index: 2;
+      max-width: 690px;
+    }
+
+    .beta-label-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 21px;
+    }
+
+    .beta-pill,
+    .new-feature-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+    }
+
+    .beta-pill {
+      background: var(--accent);
+      color: #061a12;
+    }
+
+    .new-feature-pill {
+      border: 1px solid rgba(103,183,255,.20);
+      background: rgba(103,183,255,.07);
+      color: var(--accent-2);
+    }
+
+    .beta-feature-card h2 {
+      max-width: 650px;
+      margin: 7px 0 14px;
+      font-size: clamp(31px, 4.8vw, 55px);
+      line-height: 1.02;
+      letter-spacing: -.05em;
+    }
+
+    .beta-feature-card p:not(.eyebrow) {
+      max-width: 650px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .beta-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      padding: 12px 15px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #061a12;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .beta-arrow {
+      font-size: 17px;
+      transition: transform .18s ease;
+    }
+
+    .beta-feature-card:hover .beta-arrow {
+      transform: translateX(4px);
+    }
+
+    .beta-visual {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+    }
+
+    .epc-mini-card {
+      width: 210px;
+      min-height: 230px;
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(7,17,31,.76);
+      box-shadow:
+        inset 0 0 45px rgba(95,224,167,.04),
+        0 18px 55px rgba(0,0,0,.25);
+      transform: rotate(3deg);
+      transition: transform .25s ease;
+    }
+
+    .beta-feature-card:hover .epc-mini-card {
+      transform: rotate(0deg) scale(1.025);
+    }
+
+    .epc-mini-label {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: .13em;
+      font-weight: 850;
+    }
+
+    .epc-mini-card > strong {
+      display: block;
+      margin: 10px 0 16px;
+      color: var(--accent);
+      font-size: 78px;
+      line-height: .95;
+      letter-spacing: -.07em;
+    }
+
+    .epc-mini-bars {
+      display: grid;
+      gap: 5px;
+    }
+
+    .epc-mini-bars i {
+      display: block;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+    }
+
+    .epc-mini-bars .mini-a { width: 46%; }
+    .epc-mini-bars .mini-b { width: 54%; }
+    .epc-mini-bars .mini-c { width: 63%; }
+    .epc-mini-bars .mini-d { width: 71%; }
+    .epc-mini-bars .mini-e { width: 79%; }
+    .epc-mini-bars .mini-f { width: 88%; }
+    .epc-mini-bars .mini-g { width: 100%; }
+
+    .epc-mini-bars i.active {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 14px rgba(95,224,167,.25);
+    }
+
+    .epc-mini-score {
+      display: block;
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    @media (max-width: 720px) {
+      .beta-feature-card {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+
+      .beta-visual {
+        justify-content: start;
+      }
+
+      .epc-mini-card {
+        width: 100%;
+        min-height: 0;
+        transform: none;
+      }
+
+      .epc-mini-card > strong {
+        font-size: 62px;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -22,12 +234,12 @@
     </a>
 
     <nav class="nav">
-  <a href="#overview">Overview</a>
-  <a href="#generation">Generation</a>
-  <a href="#prices">Markets</a>
-  <a href="#about">About</a>
-  <a href="epc.html">EPC Estimate</a>
-</nav>
+      <a href="#overview">Overview</a>
+      <a href="#generation">Generation</a>
+      <a href="#prices">Markets</a>
+      <a href="#about">About</a>
+      <a href="epc.html">EPC Beta</a>
+    </nav>
 
     <button id="refreshBtn" class="refresh-btn" type="button">
       <span class="refresh-dot"></span>
@@ -129,6 +341,47 @@
         <span id="gasPriceSub" class="metric-sub">UK NBP benchmark</span>
         <span class="card-arrow">View market</span>
       </button>
+    </section>
+
+
+    <section class="section beta-feature-section" aria-labelledby="epc-beta-title">
+      <a href="epc.html" class="beta-feature-card">
+        <div class="beta-feature-copy">
+          <div class="beta-label-row">
+            <span class="beta-pill">BETA</span>
+            <span class="new-feature-pill">NEW FEATURE</span>
+          </div>
+
+          <p class="eyebrow">HOME ENERGY TOOL</p>
+          <h2 id="epc-beta-title">Estimate your home's EPC rating.</h2>
+          <p>
+            Answer six quick questions about your property and get an estimated EPC band,
+            indicative score and personalised ideas for improving energy efficiency.
+          </p>
+
+          <span class="beta-cta">
+            Try EPC Estimate
+            <span class="beta-arrow" aria-hidden="true">-&gt;</span>
+          </span>
+        </div>
+
+        <div class="beta-visual" aria-hidden="true">
+          <div class="epc-mini-card">
+            <span class="epc-mini-label">ESTIMATED EPC</span>
+            <strong>C</strong>
+            <div class="epc-mini-bars">
+              <i class="mini-a"></i>
+              <i class="mini-b"></i>
+              <i class="mini-c active"></i>
+              <i class="mini-d"></i>
+              <i class="mini-e"></i>
+              <i class="mini-f"></i>
+              <i class="mini-g"></i>
+            </div>
+            <span class="epc-mini-score">6 questions</span>
+          </div>
+        </div>
+      </a>
     </section>
 
     <section id="generation" class="section">
@@ -270,10 +523,10 @@
   </aside>
 
   <footer>
-    <span>GB Energy Live v1.2.0</span>
+    <span>GB Energy Live v1.3.2</span>
     <span>Elexon + UK NBP benchmark</span>
   </footer>
 
-  <script src="app.js?v=1.2.0"></script>
+  <script src="app.js?v=1.3.2"></script>
 </body>
 </html>
