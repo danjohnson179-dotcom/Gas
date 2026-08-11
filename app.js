@@ -1,116 +1,180 @@
 const API = "https://data.elexon.co.uk/bmrs/api/v1";
+const PRICES_JSON = "data/prices.json";
 
 const state = {
   demandMW: null,
   generationMW: null,
-  powerPrice: null,
+  powerPriceGBP: null,
+  gasPriceGBP: null,
+  gasRawPencePerTherm: null,
+  powerSource: null,
+  gasSource: null,
+  priceUpdated: null,
   fuels: [],
-  updated: null,
-  dataSource: "live"
+  updated: null
 };
 
-const $ = (id) => document.getElementById(id);
-const fmtGW = mw => `${(mw / 1000).toFixed(1)} GW`;
-const fmtMW = mw => `${Math.round(mw).toLocaleString()} MW`;
+const byId = (id) => document.getElementById(id);
+const fmtGW = (mw) => `${(mw / 1000).toFixed(1)} GW`;
+const fmtMW = (mw) => `${Math.round(mw).toLocaleString()} MW`;
+const fmtGBP = (value) => `GBP ${Number(value).toFixed(2)}/MWh`;
 
 function isoHoursAgo(hours) {
   return new Date(Date.now() - hours * 3600 * 1000).toISOString();
 }
 
-async function getJson(url) {
-  const res = await fetch(url, { headers: { "Accept": "application/json" }});
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  return res.json();
+async function getJson(url, timeout = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-function unwrap(x) {
-  if (Array.isArray(x)) return x;
-  if (!x || typeof x !== "object") return [];
+function rowsFrom(value) {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== "object") return [];
   for (const key of ["data", "items", "results", "result"]) {
-    if (Array.isArray(x[key])) return x[key];
+    if (Array.isArray(value[key])) return value[key];
   }
   return [];
 }
 
-function num(obj, keys) {
-  for (const k of keys) {
-    const v = Number(obj?.[k]);
-    if (Number.isFinite(v)) return v;
+function numberFrom(obj, keys) {
+  for (const key of keys) {
+    const value = Number(obj?.[key]);
+    if (Number.isFinite(value)) return value;
   }
   return null;
 }
 
-async function loadGeneration() {
-  let rows = [];
-  try {
-    const j = await getJson(`${API}/generation/actual/per-type/day-total`);
-    rows = unwrap(j);
-  } catch (_) {}
+function cleanFuelName(name) {
+  const raw = String(name || "other")
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .trim()
+    .toLowerCase();
 
-  if (!rows.length) {
-    const to = new Date().toISOString();
-    const from = isoHoursAgo(2);
-    const j = await getJson(`${API}/generation/actual/per-type?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-    const raw = unwrap(j);
-    const latestTime = raw.map(r => r.startTime || r.startTimeUtc || r.settlementDate || "").sort().pop();
-    rows = latestTime ? raw.filter(r => (r.startTime || r.startTimeUtc || r.settlementDate || "") === latestTime) : raw.slice(-20);
+  const aliases = {
+    ccgt: "gas",
+    ocgt: "gas",
+    "fossil gas": "gas",
+    "natural gas": "gas",
+    "wind offshore": "offshore wind",
+    "wind onshore": "onshore wind"
+  };
+  return aliases[raw] || raw;
+}
+
+async function loadGeneration() {
+  const attempts = [
+    async () => rowsFrom(await getJson(`${API}/generation/outturn/current`)),
+    async () => {
+      const rows = rowsFrom(await getJson(`${API}/datasets/FUELINST`));
+      const times = rows
+        .map((r) => r.startTime || r.publishTime || r.datasetTime || r.time)
+        .filter(Boolean)
+        .sort();
+      const latest = times[times.length - 1];
+      return latest
+        ? rows.filter((r) =>
+            (r.startTime || r.publishTime || r.datasetTime || r.time) === latest
+          )
+        : rows;
+    }
+  ];
+
+  let rows = [];
+  for (const attempt of attempts) {
+    try {
+      rows = await attempt();
+      if (rows.length) break;
+    } catch (error) {
+      console.warn("Generation request failed", error);
+    }
   }
 
-  const fuels = rows.map(r => ({
-    name: String(r.psrType || r.fuelType || r.productionType || r.name || "other").replaceAll("_"," ").toLowerCase(),
-    mw: num(r, ["currentUsage", "quantity", "generation", "mw", "value", "halfHourUsage", "lastHalfHourUsage"]) ?? 0,
-    pct: num(r, ["currentPercentage", "percentage", "share", "lastHalfHourPercentage"])
-  })).filter(x => x.mw > 0);
+  const fuels = rows.map((row) => ({
+    name: cleanFuelName(row.fuelType || row.psrType || row.productionType || row.name),
+    mw: numberFrom(row, ["generation", "currentUsage", "quantity", "mw", "value"]) || 0,
+    pct: numberFrom(row, ["percentage", "currentPercentage", "share"])
+  })).filter((fuel) => fuel.mw > 0);
 
-  if (!fuels.length) throw new Error("No generation rows");
-  state.fuels = fuels.sort((a,b) => b.mw - a.mw);
-  state.generationMW = fuels.reduce((s,f) => s + f.mw, 0);
+  if (!fuels.length) throw new Error("No generation values");
+
+  state.fuels = fuels.sort((a, b) => b.mw - a.mw);
+  state.generationMW = state.fuels.reduce((sum, fuel) => sum + fuel.mw, 0);
 }
 
 async function loadDemand() {
-  const to = new Date().toISOString();
-  const from = isoHoursAgo(2);
-  const candidates = [
-    `${API}/demand/actual/total?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-    `${API}/demand/outturn?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+  const attempts = [
+    async () => rowsFrom(await getJson(`${API}/datasets/INDO`)),
+    async () => {
+      const from = encodeURIComponent(isoHoursAgo(3));
+      const to = encodeURIComponent(new Date().toISOString());
+      return rowsFrom(await getJson(`${API}/demand/outturn?from=${from}&to=${to}`));
+    }
   ];
 
-  for (const url of candidates) {
+  for (const attempt of attempts) {
     try {
-      const j = await getJson(url);
-      const rows = unwrap(j);
-      const vals = rows.map(r => num(r, ["demand", "initialDemandOutturn", "transmissionSystemDemand", "nationalDemand", "value", "quantity"])).filter(Number.isFinite);
-      if (vals.length) {
-        state.demandMW = vals[vals.length - 1];
+      const rows = await attempt();
+      const values = rows.map((row) => numberFrom(row, [
+        "initialDemandOutturn",
+        "demand",
+        "nationalDemand",
+        "transmissionSystemDemand",
+        "value"
+      ])).filter(Number.isFinite);
+
+      if (values.length) {
+        state.demandMW = values[values.length - 1];
         return;
       }
-    } catch (_) {}
+    } catch (error) {
+      console.warn("Demand request failed", error);
+    }
   }
 
-  state.demandMW = state.generationMW;
+  if (state.generationMW) state.demandMW = state.generationMW;
 }
 
-async function loadPrice() {
-  const to = new Date().toISOString();
-  const from = isoHoursAgo(24);
-  const url = `${API}/balancing/pricing/market-index?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
-  const j = await getJson(url);
-  const rows = unwrap(j);
-  const priced = rows.map(r => ({
-    p: num(r, ["price", "marketIndexPrice"]),
-    t: r.startTime || r.settlementDate || r.publishTime || ""
-  })).filter(x => Number.isFinite(x.p));
-  if (!priced.length) throw new Error("No market price");
-  state.powerPrice = priced[priced.length - 1].p;
-}
+async function loadPrices() {
+  try {
+    const json = await getJson(`${PRICES_JSON}?t=${Date.now()}`, 6000);
 
-function friendlyFuel(name) {
-  const map = {
-    "natural gas": "gas", "fossil gas": "gas", "ccgt": "gas",
-    "wind offshore": "offshore wind", "wind onshore": "onshore wind",
-    "other renewable": "other renewables", "biomass": "biomass"
-  };
-  return map[name] || name;
+    if (json?.electricity?.status === "ok") {
+      const price = Number(json.electricity.gbpPerMWh);
+      if (Number.isFinite(price)) {
+        state.powerPriceGBP = price;
+        state.powerSource = json.electricity.sourceLabel || json.electricity.source || "Elexon";
+      }
+    }
+
+    if (json?.gas?.status === "ok") {
+      const price = Number(json.gas.gbpPerMWh);
+      const raw = Number(json.gas.pencePerTherm);
+
+      if (Number.isFinite(price)) {
+        state.gasPriceGBP = price;
+        state.gasSource = json.gas.sourceLabel || json.gas.source || "UK NBP";
+      }
+      if (Number.isFinite(raw)) state.gasRawPencePerTherm = raw;
+    }
+
+    state.priceUpdated = json?.updated || null;
+  } catch (error) {
+    console.warn("Price file unavailable", error);
+  }
 }
 
 function isLowCarbon(name) {
@@ -124,149 +188,225 @@ function isFossil(name) {
 function render() {
   state.updated = new Date();
 
-  $("generationValue").textContent = state.generationMW ? fmtGW(state.generationMW) : "Unavailable";
-  $("generationSub").textContent = state.generationMW ? `${fmtMW(state.generationMW)} published generation` : "Could not load generation";
+  byId("generationValue").textContent =
+    state.generationMW ? fmtGW(state.generationMW) : "Unavailable";
 
-  $("demandValue").textContent = state.demandMW ? fmtGW(state.demandMW) : "Unavailable";
-  $("demandSub").textContent = state.demandMW === state.generationMW
-    ? "Approx. from current generation"
-    : `${fmtMW(state.demandMW)} latest published demand`;
+  byId("generationSub").textContent =
+    state.generationMW
+      ? `${fmtMW(state.generationMW)} published generation`
+      : "Generation feed unavailable";
 
-  const p = Number.isFinite(state.powerPrice) ? `Â£${state.powerPrice.toFixed(2)}/MWh` : "Unavailable";
-  $("powerPrice").textContent = p;
-  $("powerPriceLarge").textContent = p;
-  $("powerPriceSub").textContent = Number.isFinite(state.powerPrice) ? "Latest Elexon market index" : "Market data unavailable";
-  $("powerPriceExplain").textContent = Number.isFinite(state.powerPrice)
-    ? `The latest available market index price is Â£${state.powerPrice.toFixed(2)} per MWh.`
-    : "Elexon's price feed could not be loaded in this browser right now.";
+  byId("demandValue").textContent =
+    state.demandMW ? fmtGW(state.demandMW) : "Unavailable";
 
-  $("mixTotal").textContent = state.generationMW ? fmtGW(state.generationMW) : "â";
-  $("generationTimestamp").textContent = `Updated ${state.updated.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}`;
+  byId("demandSub").textContent =
+    state.demandMW
+      ? `${fmtMW(state.demandMW)} latest published demand`
+      : "Demand feed unavailable";
 
-  if (state.fuels.length) {
-    const max = Math.max(...state.fuels.map(f => f.mw));
-    $("fuelMix").innerHTML = state.fuels.slice(0,10).map(f => {
-      const pct = f.pct ?? (f.mw/state.generationMW*100);
+  const electricityText = Number.isFinite(state.powerPriceGBP)
+    ? fmtGBP(state.powerPriceGBP)
+    : "Unavailable";
+
+  byId("powerPrice").textContent = electricityText;
+  byId("powerPriceLarge").textContent = electricityText;
+  byId("powerPriceSub").textContent = Number.isFinite(state.powerPriceGBP)
+    ? "Latest valid GB short-term wholesale price"
+    : "Price feed temporarily unavailable";
+
+  byId("powerPriceExplain").textContent = Number.isFinite(state.powerPriceGBP)
+    ? `Latest validated Elexon short-term GB wholesale price: ${electricityText}.`
+    : "No recent valid electricity price has been published to the dashboard.";
+
+  const gasText = Number.isFinite(state.gasPriceGBP)
+    ? fmtGBP(state.gasPriceGBP)
+    : "Unavailable";
+
+  byId("gasPrice").textContent = gasText;
+  byId("gasPriceLarge").textContent = gasText;
+  byId("gasPriceSub").textContent = Number.isFinite(state.gasPriceGBP)
+    ? "UK NBP gas benchmark"
+    : "UK gas benchmark temporarily unavailable";
+
+  byId("gasPriceExplain").textContent = Number.isFinite(state.gasPriceGBP)
+    ? `Latest UK NBP benchmark converted to ${gasText}. Original quote: ${state.gasRawPencePerTherm?.toFixed(2) ?? "-"} p/therm.`
+    : "No recent valid UK gas benchmark has been published to the dashboard.";
+
+  if (byId("gasPriceType")) {
+    byId("gasPriceType").textContent = state.gasSource || "UK NBP benchmark";
+  }
+
+  if (byId("gasUpdated")) {
+    byId("gasUpdated").textContent = state.priceUpdated
+      ? `Prices updated ${new Date(state.priceUpdated).toLocaleString()}`
+      : "Waiting for price updater";
+  }
+
+  byId("mixTotal").textContent =
+    state.generationMW ? fmtGW(state.generationMW) : "-";
+
+  byId("generationTimestamp").textContent =
+    `Updated ${state.updated.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    })}`;
+
+  if (state.fuels.length && state.generationMW) {
+    const maxMW = Math.max(...state.fuels.map((fuel) => fuel.mw));
+
+    byId("fuelMix").innerHTML = state.fuels.slice(0, 12).map((fuel) => {
+      const pct = Number.isFinite(fuel.pct)
+        ? fuel.pct
+        : (fuel.mw / state.generationMW) * 100;
+      const width = Math.max(2, Math.min(100, (fuel.mw / maxMW) * 100));
+
       return `<div class="fuel-row">
-        <span class="fuel-name">${friendlyFuel(f.name)}</span>
-        <span class="bar" title="${pct.toFixed(1)}%"><span style="width:${Math.min(100,(f.mw/max)*100)}%"></span></span>
+        <span class="fuel-name">${fuel.name}</span>
+        <span class="bar"><span style="width:${width}%"></span></span>
         <span class="fuel-value">${pct.toFixed(1)}%</span>
       </div>`;
     }).join("");
 
-    const low = state.fuels.filter(f => isLowCarbon(f.name)).reduce((s,f)=>s+f.mw,0);
-    const fossil = state.fuels.filter(f => isFossil(f.name)).reduce((s,f)=>s+f.mw,0);
-    const lowPct = state.generationMW ? low/state.generationMW*100 : 0;
-    const fossilPct = state.generationMW ? fossil/state.generationMW*100 : 0;
+    const low = state.fuels
+      .filter((fuel) => isLowCarbon(fuel.name))
+      .reduce((sum, fuel) => sum + fuel.mw, 0);
+
+    const fossil = state.fuels
+      .filter((fuel) => isFossil(fuel.name))
+      .reduce((sum, fuel) => sum + fuel.mw, 0);
+
+    const lowPct = low / state.generationMW * 100;
+    const fossilPct = fossil / state.generationMW * 100;
     const largest = state.fuels[0];
 
-    $("lowCarbonShare").textContent = `${lowPct.toFixed(0)}%`;
-    $("fossilShare").textContent = `${fossilPct.toFixed(0)}%`;
-    $("largestSource").textContent = friendlyFuel(largest.name);
-    $("mixHeadline").textContent = `${friendlyFuel(largest.name)} is the largest source right now`;
-    $("mixExplanation").textContent =
-      `${friendlyFuel(largest.name)} is contributing about ${(largest.mw/state.generationMW*100).toFixed(0)}% of the generation shown. ` +
-      `The dashboard currently classifies about ${lowPct.toFixed(0)}% as low-carbon.`;
+    byId("lowCarbonShare").textContent = `${lowPct.toFixed(0)}%`;
+    byId("fossilShare").textContent = `${fossilPct.toFixed(0)}%`;
+    byId("largestSource").textContent = largest.name;
+    byId("mixHeadline").textContent = `${largest.name} is the largest source right now`;
+    byId("mixExplanation").textContent =
+      `${largest.name} is contributing about ${(largest.mw/state.generationMW*100).toFixed(0)}% of the generation shown. ` +
+      `Around ${lowPct.toFixed(0)}% is classified as low-carbon.`;
   } else {
-    $("fuelMix").innerHTML = `<p class="muted">Live fuel-mix data is temporarily unavailable.</p>`;
-    $("mixHeadline").textContent = "Live generation mix unavailable";
-    $("mixExplanation").textContent = "Try Refresh. The page will never invent a live fuel mix when the public API does not respond.";
+    byId("fuelMix").innerHTML =
+      '<p class="muted">Generation mix temporarily unavailable.</p>';
   }
 
-  $("lastUpdated").textContent = `Last updated ${state.updated.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"})}`;
-  $("liveStatus").classList.add("live");
-  $("liveStatus").innerHTML = `<span class="dot"></span> Live public data`;
+  byId("lastUpdated").textContent =
+    `Last updated ${state.updated.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    })}`;
+
+  const liveCount = [
+    Boolean(state.generationMW),
+    Boolean(state.demandMW),
+    Number.isFinite(state.powerPriceGBP),
+    Number.isFinite(state.gasPriceGBP)
+  ].filter(Boolean).length;
+
+  if (liveCount) {
+    byId("liveStatus").classList.add("live");
+    byId("liveStatus").innerHTML =
+      `<span class="dot"></span> ${liveCount}/4 data feeds connected`;
+  } else {
+    byId("liveStatus").classList.remove("live");
+    byId("liveStatus").innerHTML =
+      '<span class="dot"></span> Data feeds unavailable';
+  }
 }
 
 async function refreshAll() {
-  $("refreshBtn").disabled = true;
-  $("refreshBtn").textContent = "â» Updating";
-  $("liveStatus").classList.remove("live");
-  $("liveStatus").innerHTML = `<span class="dot"></span> Updating`;
+  byId("refreshBtn").disabled = true;
+  byId("refreshBtn").textContent = "Updating";
 
-  const results = await Promise.allSettled([
-    loadGeneration(),
-    loadPrice()
-  ]);
+  state.demandMW = null;
+  state.generationMW = null;
+  state.powerPriceGBP = null;
+  state.gasPriceGBP = null;
+  state.gasRawPencePerTherm = null;
+  state.fuels = [];
 
-  await loadDemand().catch(()=>{});
+  await Promise.allSettled([loadGeneration(), loadPrices()]);
+  await loadDemand().catch(() => {});
+
   render();
 
-  const failed = results.filter(r => r.status === "rejected").length;
-  if (failed) {
-    $("liveStatus").innerHTML = `<span class="dot"></span> Live data â¢ ${failed} feed issue${failed>1?"s":""}`;
-  }
-  $("refreshBtn").disabled = false;
-  $("refreshBtn").textContent = "â» Refresh";
+  byId("refreshBtn").disabled = false;
+  byId("refreshBtn").textContent = "Refresh";
 }
 
-function addMessage(text, who="bot") {
-  const el = document.createElement("div");
-  el.className = `message ${who}`;
-  el.textContent = text;
-  $("chatMessages").appendChild(el);
-  $("chatMessages").scrollTop = $("chatMessages").scrollHeight;
+function addMessage(text, who = "bot") {
+  const node = document.createElement("div");
+  node.className = `message ${who}`;
+  node.textContent = text;
+  byId("chatMessages").appendChild(node);
+  byId("chatMessages").scrollTop = byId("chatMessages").scrollHeight;
 }
 
-function answer(q) {
-  const s = q.toLowerCase();
+function answer(question) {
+  const q = question.toLowerCase();
   const biggest = state.fuels[0];
-  const demand = state.demandMW;
-  const gen = state.generationMW;
 
-  if (/powering|generation|fuel|mix|renewable|wind|gas|nuclear|solar/.test(s)) {
-    if (!biggest || !gen) return "The live generation mix is unavailable at the moment. Use Refresh and I will explain it as soon as the API responds.";
-    const pct = biggest.mw/gen*100;
-    return `${friendlyFuel(biggest.name)} is the largest source in the current mix at roughly ${pct.toFixed(0)}%. Total published generation is about ${fmtGW(gen)}.`;
+  if (/gas price|gas market|therm|nbp/.test(q)) {
+    if (!Number.isFinite(state.gasPriceGBP)) {
+      return "The UK gas benchmark is temporarily unavailable.";
+    }
+    return `The current displayed UK NBP benchmark is ${fmtGBP(state.gasPriceGBP)}, converted from ${state.gasRawPencePerTherm.toFixed(2)} pence per therm.`;
   }
-  if (/demand|usage|using|high/.test(s)) {
-    if (!demand) return "I do not have a live demand value right now.";
-    let context = "That is a normal grid-scale figure, but whether it is unusually high depends on time of day, season and weather.";
-    if (demand > 40000) context = "That is relatively high for GB and is often seen around busy winter or evening periods.";
-    if (demand < 25000) context = "That is relatively low for GB and is more typical of quieter overnight or low-demand periods.";
-    return `Current displayed electricity demand is about ${fmtGW(demand)}. ${context}`;
+
+  if (/powering|generation|fuel|mix|wind|nuclear|solar/.test(q)) {
+    if (!biggest || !state.generationMW) return "Generation data is unavailable.";
+    return `${biggest.name} is the largest source at about ${(biggest.mw/state.generationMW*100).toFixed(0)}%. Total displayed generation is ${fmtGW(state.generationMW)}.`;
   }
-  if (/price|mwh|wholesale|expensive|cheap/.test(s)) {
-    if (!Number.isFinite(state.powerPrice)) return "The wholesale electricity price feed is unavailable right now. The gas card links directly to National Gas for its current Gas Day price data.";
-    return `The latest electricity market index shown is Â£${state.powerPrice.toFixed(2)}/MWh. That is a wholesale market signal, not the price on a household bill. Retail bills also include networks, policy costs, supplier costs, taxes and hedging.`;
+
+  if (/demand|usage|using|high/.test(q)) {
+    if (!state.demandMW) return "Demand data is unavailable.";
+    return `Current displayed GB electricity demand is about ${fmtGW(state.demandMW)}.`;
   }
-  if (/gas price|gas market|therm/.test(s)) {
-    return "For gas, this release links to National Gas's live Gas Day page instead of scraping or inventing a figure. Their page includes current market price information alongside supply, demand and linepack.";
+
+  if (/electricity price|price|mwh|wholesale/.test(q)) {
+    if (!Number.isFinite(state.powerPriceGBP)) {
+      return "The short-term GB wholesale electricity price is temporarily unavailable.";
+    }
+    return `The latest validated Elexon wholesale electricity price is ${fmtGBP(state.powerPriceGBP)}.`;
   }
-  if (/source|api|where|data/.test(s)) {
-    return "Electricity data comes from Elexon's public Insights API with no API key. The gas market link goes to National Gas's official data portal.";
-  }
-  if (/hello|hi|hey/.test(s)) {
-    return "Hi. Ask me about current demand, the generation mix, wholesale electricity prices, or where the data comes from.";
-  }
-  return "I can explain the live demand, generation mix, wholesale electricity price, gas-data source, or what any of the units mean. Try asking âwhat is powering GB?â";
+
+  return "Ask me about demand, generation, wholesale electricity, or the UK NBP gas benchmark.";
 }
 
 function ask(text) {
-  const q = text.trim();
-  if (!q) return;
-  addMessage(q, "user");
-  $("chatInput").value = "";
-  setTimeout(() => addMessage(answer(q), "bot"), 160);
+  const question = text.trim();
+  if (!question) return;
+  addMessage(question, "user");
+  byId("chatInput").value = "";
+  setTimeout(() => addMessage(answer(question), "bot"), 150);
 }
 
-document.querySelectorAll("[data-scroll]").forEach(btn => {
-  btn.addEventListener("click", () => document.getElementById(btn.dataset.scroll).scrollIntoView({behavior:"smooth"}));
+document.querySelectorAll("[data-scroll]").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.getElementById(button.dataset.scroll)
+      .scrollIntoView({ behavior: "smooth" });
+  });
 });
 
-$("refreshBtn").addEventListener("click", refreshAll);
-$("chatLauncher").addEventListener("click", () => {
-  $("chatPanel").classList.add("open");
-  $("chatPanel").setAttribute("aria-hidden","false");
-  $("chatInput").focus();
+byId("refreshBtn").addEventListener("click", refreshAll);
+byId("chatLauncher").addEventListener("click", () => {
+  byId("chatPanel").classList.add("open");
+  byId("chatPanel").setAttribute("aria-hidden", "false");
+  byId("chatInput").focus();
 });
-$("chatClose").addEventListener("click", () => {
-  $("chatPanel").classList.remove("open");
-  $("chatPanel").setAttribute("aria-hidden","true");
+byId("chatClose").addEventListener("click", () => {
+  byId("chatPanel").classList.remove("open");
+  byId("chatPanel").setAttribute("aria-hidden", "true");
 });
-$("chatSend").addEventListener("click", () => ask($("chatInput").value));
-$("chatInput").addEventListener("keydown", e => { if (e.key === "Enter") ask(e.target.value); });
-document.querySelectorAll(".quick-questions button").forEach(btn => btn.addEventListener("click", () => ask(btn.textContent)));
+byId("chatSend").addEventListener("click", () => ask(byId("chatInput").value));
+byId("chatInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") ask(event.target.value);
+});
+document.querySelectorAll(".quick-questions button").forEach((button) => {
+  button.addEventListener("click", () => ask(button.textContent));
+});
 
 refreshAll();
 setInterval(refreshAll, 5 * 60 * 1000);
