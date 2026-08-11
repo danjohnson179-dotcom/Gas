@@ -1,13 +1,11 @@
 import fs from "node:fs/promises";
 
 const ELEXON_API = "https://data.elexon.co.uk/bmrs/api/v1";
-const NATIONAL_GAS_API = "https://api.nationalgas.com/operationaldata/v1";
 const OUTPUT = new URL("../data/prices.json", import.meta.url);
-
 const THERM_MWH = 0.029307107;
 
-function pencePerThermToGBPPerMWh(value) {
-  return (Number(value) / 100) / THERM_MWH;
+function toGBPPerMWh(pencePerTherm) {
+  return (Number(pencePerTherm) / 100) / THERM_MWH;
 }
 
 function rowsFrom(value) {
@@ -19,29 +17,27 @@ function rowsFrom(value) {
   return [];
 }
 
-function finiteNumber(value) {
+function num(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
-function isoDate(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-async function fetchJson(url, options = {}) {
+async function fetchText(url) {
   const response = await fetch(url, {
-    ...options,
     headers: {
-      Accept: "application/json",
-      ...(options.headers || {})
+      "User-Agent": "Mozilla/5.0 GB-Energy-Live/1.1",
+      "Accept-Language": "en-GB,en;q=0.9"
     }
   });
+  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
+  return response.text();
+}
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(`${response.status} ${response.statusText}: ${text.slice(0, 250)}`);
-  }
-
+async function fetchJson(url) {
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" }
+  });
+  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
   return response.json();
 }
 
@@ -53,228 +49,146 @@ async function loadPrevious() {
   }
 }
 
-function validTimestamp(value) {
-  const time = Date.parse(value || "");
-  return Number.isFinite(time) ? time : 0;
-}
-
-async function fetchElectricityPrice() {
-  const now = new Date();
-  const from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+async function electricityPrice() {
+  const to = new Date();
+  const from = new Date(to.getTime() - 24 * 60 * 60 * 1000);
 
   const url = new URL(`${ELEXON_API}/balancing/pricing/market-index`);
   url.searchParams.set("from", from.toISOString());
-  url.searchParams.set("to", now.toISOString());
+  url.searchParams.set("to", to.toISOString());
 
-  const json = await fetchJson(url);
-  const rows = rowsFrom(json);
+  const rows = rowsFrom(await fetchJson(url));
 
-  const candidates = rows.map((row) => {
-    const price = finiteNumber(row.price ?? row.marketIndexPrice);
-    const volume = finiteNumber(row.volume ?? row.marketIndexVolume);
-    const provider = String(
+  const candidates = rows.map((row) => ({
+    price: num(row.price ?? row.marketIndexPrice),
+    volume: num(row.volume ?? row.marketIndexVolume),
+    provider: String(
       row.dataProvider ??
       row.provider ??
       row.marketIndexDataProvider ??
       ""
-    ).toUpperCase();
-
-    const timestamp =
+    ),
+    timestamp: String(
       row.startTime ??
       row.publishTime ??
       row.settlementDate ??
-      row.createdDate ??
-      "";
-
-    return { price, volume, provider, timestamp };
-  }).filter((row) =>
+      ""
+    )
+  })).filter((row) =>
     Number.isFinite(row.price) &&
     Number.isFinite(row.volume) &&
     row.volume > 0 &&
-    validTimestamp(row.timestamp) > 0
+    Date.parse(row.timestamp)
   );
 
   if (!candidates.length) {
-    throw new Error("No Elexon market-index record with positive traded volume was returned.");
+    throw new Error("No Elexon MID record with positive market volume.");
   }
 
-  // Prefer APX if there is a current APX observation, then use the latest timestamp.
-  candidates.sort((a, b) => {
-    const aPreferred = a.provider.includes("APX") ? 1 : 0;
-    const bPreferred = b.provider.includes("APX") ? 1 : 0;
+  candidates.sort((a, b) =>
+    Date.parse(b.timestamp) - Date.parse(a.timestamp)
+  );
 
-    if (aPreferred !== bPreferred) return bPreferred - aPreferred;
-    return validTimestamp(b.timestamp) - validTimestamp(a.timestamp);
-  });
+  // For the newest settlement time, choose the provider with the largest
+  // traded volume. This avoids accepting an inactive zero-volume MIDP row.
+  const newestTime = candidates[0].timestamp;
+  const newest = candidates
+    .filter((row) => row.timestamp === newestTime)
+    .sort((a, b) => b.volume - a.volume);
 
-  const latest = candidates[0];
+  const selected = newest[0];
 
-  // Reject stale observations older than 12 hours.
-  const ageMs = Date.now() - validTimestamp(latest.timestamp);
-  if (ageMs > 12 * 60 * 60 * 1000) {
-    throw new Error(`Latest valid Elexon price is stale: ${latest.timestamp}`);
+  if (Date.now() - Date.parse(selected.timestamp) > 12 * 60 * 60 * 1000) {
+    throw new Error(`Elexon price is stale: ${selected.timestamp}`);
   }
 
   return {
     status: "ok",
-    gbpPerMWh: Number(latest.price.toFixed(2)),
-    originalPrice: latest.price,
-    originalUnit: "GBP/MWh",
-    provider: latest.provider || "Elexon Market Index Data",
-    volumeMWh: Number(latest.volume.toFixed(3)),
-    observationTime: latest.timestamp,
-    source: "Elexon Insights",
+    gbpPerMWh: Number(selected.price.toFixed(2)),
+    volumeMWh: Number(selected.volume.toFixed(3)),
+    provider: selected.provider,
+    observationTime: selected.timestamp,
+    source: "Elexon Insights Market Index Data",
+    sourceLabel: "Elexon short-term GB market",
     sourceUrl: "https://bmrs.elexon.co.uk/market-index-prices"
   };
 }
 
-function flattenCatalogue(node, output = []) {
-  if (Array.isArray(node)) {
-    for (const item of node) flattenCatalogue(item, output);
-    return output;
+function parseTradingEconomics(text) {
+  const patterns = [
+    /UK Gas rose to\s+([0-9]+(?:\.[0-9]+)?)\s+GBp\/thm/i,
+    /UK Gas fell to\s+([0-9]+(?:\.[0-9]+)?)\s+GBp\/thm/i,
+    /UK Gas(?:'s)? price[^0-9]{0,80}([0-9]+(?:\.[0-9]+)?)\s+GBp\/thm/i,
+    /UK Natural Gas[^0-9]{0,120}([0-9]+(?:\.[0-9]+)?)\s+GBp\/thm/i
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) return Number(match[1]);
   }
-
-  if (!node || typeof node !== "object") return output;
-
-  if (node.publicationId && node.name) {
-    output.push({
-      publicationId: String(node.publicationId),
-      name: String(node.name),
-      parent: String(node.parent || "")
-    });
-  }
-
-  for (const value of Object.values(node)) {
-    if (value && typeof value === "object") flattenCatalogue(value, output);
-  }
-
-  return output;
+  return null;
 }
 
-function scoreGasPriceItem(item) {
-  const name = `${item.name} ${item.parent}`.toLowerCase();
-  let score = 0;
-
-  if (name.includes("system average price")) score += 100;
-  if (/\bsap\b/.test(name)) score += 80;
-  if (name.includes("average price")) score += 50;
-  if (name.includes("price")) score += 25;
-  if (name.includes("balancing")) score += 15;
-  if (name.includes("system")) score += 10;
-
-  // Avoid clearly unrelated price data.
-  if (name.includes("capacity")) score -= 50;
-  if (name.includes("entry")) score -= 15;
-  if (name.includes("exit")) score -= 15;
-
-  return score;
-}
-
-async function discoverGasPricePublication() {
-  const catalogue = await fetchJson(
-    `${NATIONAL_GAS_API}/publications/catalogue`
-  );
-
-  const entries = flattenCatalogue(catalogue)
-    .map((item) => ({ ...item, score: scoreGasPriceItem(item) }))
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score);
-
-  if (!entries.length || entries[0].score < 50) {
-    throw new Error("Could not identify a System Average Price publication in the National Gas catalogue.");
+function parseMarketWatch(text) {
+  const patterns = [
+    /Last Updated:[\s\S]{0,500}?([0-9]{2,4}\.[0-9]{2,4})\s*(?:p|GBp)/i,
+    /ICE UK Natural Gas Continuous Contract[\s\S]{0,800}?([0-9]{2,4}\.[0-9]{2,4})/i,
+    /Settlement Price[\s\S]{0,100}?([0-9]{2,4}\.[0-9]{2,4})p/i
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) return Number(match[1]);
   }
-
-  console.log("National Gas price catalogue candidate:", entries[0]);
-
-  return entries[0];
+  return null;
 }
 
-async function fetchGasPrice() {
-  const publication = await discoverGasPricePublication();
-
-  const today = new Date();
-  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-  const body = {
-    fromDate: isoDate(yesterday),
-    toDate: isoDate(today),
-    publicationIds: [publication.publicationId],
-    latestValue: "Y"
-  };
-
-  const response = await fetchJson(
-    `${NATIONAL_GAS_API}/publications/gasday`,
+async function gasPrice() {
+  const sources = [
     {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
+      name: "Trading Economics UK Natural Gas benchmark",
+      url: "https://tradingeconomics.com/commodity/uk-natural-gas",
+      parser: parseTradingEconomics,
+      delay: "Public benchmark page"
+    },
+    {
+      name: "MarketWatch ICE UK Natural Gas continuous contract",
+      url: "https://www.marketwatch.com/investing/future/gwm00?countrycode=uk",
+      parser: parseMarketWatch,
+      delay: "Delayed ICE-derived quote"
     }
-  );
+  ];
 
-  const groups = Array.isArray(response) ? response : rowsFrom(response);
+  const errors = [];
 
-  const values = [];
+  for (const source of sources) {
+    try {
+      const text = await fetchText(source.url);
+      const value = source.parser(text);
 
-  for (const group of groups) {
-    const publications = Array.isArray(group.publications)
-      ? group.publications
-      : [];
+      if (!Number.isFinite(value)) {
+        throw new Error("No UK p/therm quote found in page.");
+      }
 
-    for (const item of publications) {
-      const value = finiteNumber(item.value);
+      if (value < 5 || value > 2000) {
+        throw new Error(`Implausible UK gas value: ${value}`);
+      }
 
-      if (!Number.isFinite(value)) continue;
-
-      values.push({
-        pencePerTherm: value,
-        applicableAt: item.applicableAt || "",
-        applicableFor: item.applicableFor || "",
-        generatedTimeStamp: item.generatedTimeStamp || item.createdDate || ""
-      });
+      return {
+        status: "ok",
+        gbpPerMWh: Number(toGBPPerMWh(value).toFixed(2)),
+        pencePerTherm: Number(value.toFixed(3)),
+        observationTime: new Date().toISOString(),
+        source: source.name,
+        sourceLabel: "UK NBP gas benchmark",
+        sourceUrl: source.url,
+        quoteStatus: source.delay,
+        conversion: "GBP/MWh = (pencePerTherm / 100) / 0.029307107"
+      };
+    } catch (error) {
+      errors.push(`${source.name}: ${error.message}`);
     }
   }
 
-  if (!values.length) {
-    throw new Error(
-      `National Gas publication ${publication.publicationId} returned no numeric values.`
-    );
-  }
-
-  values.sort((a, b) => {
-    const aTime = validTimestamp(a.generatedTimeStamp || a.applicableAt);
-    const bTime = validTimestamp(b.generatedTimeStamp || b.applicableAt);
-    return bTime - aTime;
-  });
-
-  const latest = values[0];
-
-  // Basic sanity guard for pence/therm. It still allows highly stressed markets.
-  if (latest.pencePerTherm <= -100 || latest.pencePerTherm > 2000) {
-    throw new Error(
-      `National Gas returned an implausible p/therm value: ${latest.pencePerTherm}`
-    );
-  }
-
-  return {
-    status: "ok",
-    gbpPerMWh: Number(
-      pencePerThermToGBPPerMWh(latest.pencePerTherm).toFixed(2)
-    ),
-    pencePerTherm: Number(latest.pencePerTherm.toFixed(3)),
-    originalUnit: "p/therm",
-    publicationId: publication.publicationId,
-    publicationName: publication.name,
-    observationTime:
-      latest.generatedTimeStamp ||
-      latest.applicableAt ||
-      latest.applicableFor,
-    source: "National Gas Transmission REST API",
-    sourceUrl: "https://data.nationalgas.com/apis/rest-apis",
-    conversion:
-      "GBP/MWh = (pencePerTherm / 100) / 0.029307107"
-  };
+  throw new Error(errors.join(" | "));
 }
 
 const previous = await loadPrevious();
@@ -283,60 +197,33 @@ let electricity;
 let gas;
 
 try {
-  electricity = await fetchElectricityPrice();
-  console.log(
-    `Electricity: GBP ${electricity.gbpPerMWh}/MWh from ${electricity.provider}, volume ${electricity.volumeMWh} MWh`
-  );
+  electricity = await electricityPrice();
+  console.log("Electricity OK:", electricity);
 } catch (error) {
-  console.error("Electricity update failed:", error.message);
-
+  console.error("Electricity failed:", error.message);
   electricity = previous.electricity?.status === "ok"
-    ? {
-        ...previous.electricity,
-        stale: true,
-        refreshWarning: error.message
-      }
-    : {
-        status: "unavailable",
-        message: error.message,
-        source: "Elexon Insights"
-      };
+    ? { ...previous.electricity, stale: true, refreshWarning: error.message }
+    : { status: "unavailable", message: error.message, source: "Elexon" };
 }
 
 try {
-  gas = await fetchGasPrice();
-  console.log(
-    `Gas: ${gas.pencePerTherm} p/therm = GBP ${gas.gbpPerMWh}/MWh`
-  );
+  gas = await gasPrice();
+  console.log("Gas OK:", gas);
 } catch (error) {
-  console.error("Gas update failed:", error.message);
-
+  console.error("Gas failed:", error.message);
   gas = previous.gas?.status === "ok"
-    ? {
-        ...previous.gas,
-        stale: true,
-        refreshWarning: error.message
-      }
-    : {
-        status: "unavailable",
-        message: error.message,
-        source: "National Gas Transmission REST API"
-      };
+    ? { ...previous.gas, stale: true, refreshWarning: error.message }
+    : { status: "unavailable", message: error.message, source: "UK NBP benchmark" };
 }
 
-const payload = {
+const result = {
   updated: new Date().toISOString(),
   currency: "GBP",
   displayUnit: "GBP/MWh",
-  version: "1.0.3",
+  version: "1.1.0",
   electricity,
   gas
 };
 
-await fs.writeFile(
-  OUTPUT,
-  JSON.stringify(payload, null, 2) + "\n",
-  "utf8"
-);
-
+await fs.writeFile(OUTPUT, JSON.stringify(result, null, 2) + "\n", "utf8");
 console.log("Wrote data/prices.json");
