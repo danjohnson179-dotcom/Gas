@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071421">
+<title>Energy Time Machine | GB Energy Live</title>
+<style>
+:root{--bg:#071421;--card:#0d1c2e;--line:#24364b;--text:#f5f7fb;--muted:#91a3bd;--green:#5cddb0;--blue:#63b6ff}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#071421,#06111d);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:18px 20px;background:rgba(7,20,33,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.brand{font-weight:850;font-size:20px}.back{color:var(--text);text-decoration:none;border:1px solid var(--line);padding:10px 13px;border-radius:14px}
+main{max-width:900px;margin:auto;padding:34px 18px 90px}.eyebrow{color:var(--green);font-weight:850;letter-spacing:.16em;font-size:13px}
+h1{font-size:clamp(42px,9vw,72px);line-height:.94;margin:14px 0 18px;letter-spacing:-.05em}.lead{color:var(--muted);font-size:18px;line-height:1.55}
+.panel,.card{background:linear-gradient(145deg,#0d1c2e,#0a1727);border:1px solid var(--line);border-radius:28px;padding:22px;margin-top:22px}
+.controls{display:grid;grid-template-columns:1fr auto;gap:12px}input{width:100%;background:#081625;border:1px solid var(--line);color:white;border-radius:16px;padding:16px;font-size:17px}button{border:0;border-radius:16px;background:var(--green);color:#042016;font-weight:900;font-size:16px;padding:0 20px}
+.status{color:var(--muted);margin-top:14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}.metric{background:#081625;border:1px solid var(--line);border-radius:22px;padding:18px}.metric span{display:block;color:var(--muted);font-size:14px}.metric strong{display:block;font-size:29px;margin-top:8px;letter-spacing:-.03em}
+.heroMetric{font-size:54px;font-weight:900;letter-spacing:-.05em}.bar{height:12px;background:#17283b;border-radius:99px;overflow:hidden;margin-top:10px}.fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:99px}
+.timeline{display:flex;gap:7px;align-items:end;height:170px;margin-top:20px}.stick{flex:1;background:linear-gradient(180deg,var(--blue),var(--green));border-radius:7px 7px 3px 3px;min-width:3px}.compare{font-size:21px;line-height:1.45}.hidden{display:none}.note{color:var(--muted);font-size:13px;line-height:1.5}
+@media(max-width:600px){.controls{grid-template-columns:1fr}.controls button{padding:16px}.grid{grid-template-columns:1fr 1fr}.metric strong{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div class="brand">â¡ GB Energy Live</div><a class="back" href="index.html">Home</a></header>
+<main>
+<div class="eyebrow">ENERGY TIME MACHINE</div>
+<h1>Travel back through Britain's grid.</h1>
+<p class="lead">Choose a historic date and see how much electricity Britain needed, how much wind and solar produced, and how strongly the country relied on interconnectors.</p>
+
+<section class="panel">
+<div class="controls"><input id="date" type="date"><button id="go">Travel to this day â</button></div>
+<div id="status" class="status">Choose a date from 2024â2026.</div>
+</section>
+
+<div id="results" class="hidden">
+<section class="card">
+<div class="eyebrow">THAT DAY</div>
+<div id="dateTitle" class="heroMetric"></div>
+<div class="grid">
+<div class="metric"><span>Peak national demand</span><strong id="peak">â</strong></div>
+<div class="metric"><span>Average demand</span><strong id="avg">â</strong></div>
+<div class="metric"><span>Peak wind</span><strong id="wind">â</strong></div>
+<div class="metric"><span>Peak solar</span><strong id="solar">â</strong></div>
+<div class="metric"><span>Net interconnector flow</span><strong id="imports">â</strong></div>
+<div class="metric"><span>Half-hour periods</span><strong id="periods">â</strong></div>
+</div>
+</section>
+
+<section class="card">
+<div class="eyebrow">DEMAND THROUGH THE DAY</div>
+<h2>Britain's electricity pulse</h2>
+<div id="timeline" class="timeline"></div>
+<p class="note">Each bar represents one settlement period. Taller bars mean higher national electricity demand.</p>
+</section>
+
+<section class="card">
+<div class="eyebrow">AT A GLANCE</div>
+<p id="story" class="compare"></p>
+</section>
+</div>
+
+<section class="card">
+<div class="eyebrow">DATA SOURCE</div>
+<p class="note">Historic outturn data is retrieved from the National Energy System Operator (NESO) CKAN Data API. NESO notes that the historic dataset is published in arrears and can receive retrospective corrections, so this page is for exploration rather than settlement or operational decisions.</p>
+</section>
+</main>
+<script>
+const resources={
+  2026:"8a4a771c-3929-4e56-93ad-cdf13219dea5",
+  2025:"b2bde559-3455-4021-b179-dfe60c0337b0",
+  2024:"f6d02c0f-957b-48cb-82ee-09003f2ba759"
+};
+const $=id=>document.getElementById(id);
+const num=v=>{const n=Number(String(v??"").replace(/,/g,""));return Number.isFinite(n)?n:null};
+const fmtMW=v=>v==null?"â":v>=1000?(v/1000).toFixed(1)+" GW":Math.round(v)+" MW";
+function field(r,names){for(const n of names) if(r[n]!==undefined&&r[n]!==null&&r[n]!=="") return num(r[n]);return null}
+function dateVariants(iso){const [y,m,d]=iso.split("-");return [iso,`${d}/${m}/${y}`,`${d}-${m}-${y}`]}
+async function loadDay(iso){
+ const year=iso.slice(0,4), resource=resources[year];
+ if(!resource) throw new Error("This first release supports 2024, 2025 and 2026.");
+ let records=[];
+ for(const value of dateVariants(iso)){
+   const filters=encodeURIComponent(JSON.stringify({SETTLEMENT_DATE:value}));
+   const url=`https://api.neso.energy/api/3/action/datastore_search?resource_id=${resource}&limit=100&filters=${filters}`;
+   const res=await fetch(url); if(!res.ok) continue;
+   const j=await res.json(); records=j?.result?.records||[];
+   if(records.length) break;
+ }
+ if(!records.length) throw new Error("No NESO records were found for that date. Recent historic data is published in arrears.");
+ return records.sort((a,b)=>(num(a.SETTLEMENT_PERIOD)||0)-(num(b.SETTLEMENT_PERIOD)||0));
+}
+function sumFields(r,names){let s=0,seen=false;for(const n of names){const v=num(r[n]);if(v!=null){s+=v;seen=true}}return seen?s:null}
+function render(records,iso){
+ const demands=records.map(r=>field(r,["ND","NATIONAL_DEMAND"])).filter(v=>v!=null);
+ const winds=records.map(r=>field(r,["WIND","WIND_OUTTURN","EMBEDDED_WIND_GENERATION"])).filter(v=>v!=null);
+ const solars=records.map(r=>field(r,["EMBEDDED_SOLAR_GENERATION","SOLAR","SOLAR_OUTTURN"])).filter(v=>v!=null);
+ const interNames=["IFA_FLOW","IFA2_FLOW","BRITNED_FLOW","MOYLE_FLOW","EAST_WEST_FLOW","NEMO_FLOW","NSL_FLOW","VIKING_FLOW","ELECLINK_FLOW"];
+ const inter=records.map(r=>sumFields(r,interNames)).filter(v=>v!=null);
+ if(!demands.length) throw new Error("NESO returned the day, but no National Demand values were usable.");
+ const peak=Math.max(...demands), avg=demands.reduce((a,b)=>a+b,0)/demands.length;
+ $("dateTitle").textContent=new Date(iso+"T12:00:00").toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ $("peak").textContent=fmtMW(peak); $("avg").textContent=fmtMW(avg);
+ $("wind").textContent=winds.length?fmtMW(Math.max(...winds)):"â";
+ $("solar").textContent=solars.length?fmtMW(Math.max(...solars)):"â";
+ const avgi=inter.length?inter.reduce((a,b)=>a+b,0)/inter.length:null;
+ $("imports").textContent=avgi==null?"â":(avgi>=0?"+":"")+fmtMW(avgi);
+ $("periods").textContent=records.length;
+ const min=Math.min(...demands), range=Math.max(1,peak-min);
+ $("timeline").innerHTML=demands.map(v=>`<div class="stick" style="height:${20+80*(v-min)/range}%" title="${fmtMW(v)}"></div>`).join("");
+ const peakIndex=demands.indexOf(peak);
+ const hh=Math.floor(peakIndex/2), mm=peakIndex%2?"30":"00";
+ let bits=[`Demand peaked at about ${fmtMW(peak)} around ${String(hh).padStart(2,"0")}:${mm}.`];
+ if(winds.length) bits.push(`Wind output reached roughly ${fmtMW(Math.max(...winds))}.`);
+ if(solars.length) bits.push(`Embedded solar reached roughly ${fmtMW(Math.max(...solars))}.`);
+ if(avgi!=null) bits.push(`The displayed interconnector fields averaged ${avgi>=0?"a positive":"a negative"} net flow of about ${fmtMW(Math.abs(avgi))}.`);
+ $("story").textContent=bits.join(" ");
+ $("results").classList.remove("hidden");
+}
+$("go").onclick=async()=>{
+ const iso=$("date").value;if(!iso){$("status").textContent="Pick a date first.";return}
+ $("status").textContent="Opening the NESO archiveâ¦";$("results").classList.add("hidden");
+ try{const r=await loadDay(iso);render(r,iso);$("status").textContent=`Loaded ${r.length} NESO settlement periods.`}
+ catch(e){$("status").textContent=e.message}
+};
+const d=new Date();d.setDate(d.getDate()-30);$("date").value=d.toISOString().slice(0,10);
+</script>
+</body></html>
