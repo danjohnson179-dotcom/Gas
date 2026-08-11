@@ -4,86 +4,38 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#07111f">
-  <meta name="description" content="Find the greenest time to use electricity in Great Britain using NESO carbon intensity forecasts.">
   <title>Greenest Time | GB Energy Live</title>
   <style>
-    :root{
-      --bg:#07111f;--panel:#0c192a;--panel2:#102238;--border:rgba(255,255,255,.09);
-      --text:#f5f8fc;--muted:#91a1b7;--accent:#5fe0a7;--blue:#67b7ff;
-      --warn:#ffcf66;--danger:#ff8b8b;--shadow:0 20px 70px rgba(0,0,0,.28)
-    }
+    :root{--bg:#07111f;--panel:#0c192a;--border:rgba(255,255,255,.09);--text:#f5f8fc;--muted:#91a1b7;--accent:#5fe0a7;--blue:#67b7ff;--warn:#ffcf66;--shadow:0 20px 70px rgba(0,0,0,.28)}
     *{box-sizing:border-box}html,body{width:100%;max-width:100%;overflow-x:hidden}
-    body{margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);
-      background:radial-gradient(circle at 86% 7%,rgba(95,224,167,.14),transparent 29rem),
-      radial-gradient(circle at 10% 48%,rgba(103,183,255,.08),transparent 25rem),var(--bg);min-height:100vh}
-    a,button,input{font:inherit}
-    a,button{-webkit-tap-highlight-color:transparent}
-    .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;padding:14px clamp(14px,4vw,54px);
-      background:rgba(7,17,31,.92);border-bottom:1px solid var(--border);backdrop-filter:blur(16px)}
-    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:850;margin-right:auto}
-    .brand-mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--accent);color:#062017;font-size:14px;font-weight:950}
-    .menu-wrap{position:relative}
-    .menu-btn{width:46px;height:46px;border-radius:13px;border:1px solid var(--border);background:var(--panel);display:grid;place-content:center;gap:4px;cursor:pointer}
-    .menu-btn span{display:block;width:19px;height:2px;background:var(--text);border-radius:99px}
-    .site-menu{position:absolute;right:0;top:55px;width:min(310px,calc(100vw - 28px));padding:12px;border-radius:18px;border:1px solid var(--border);
-      background:rgba(8,20,35,.99);box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(-6px);transition:.17s ease}
-    .site-menu.open{opacity:1;visibility:visible;transform:none}
-    .menu-link{display:block;text-decoration:none;padding:12px;border-radius:12px}
-    .menu-link:hover{background:rgba(255,255,255,.04)}
-    .menu-link strong{display:block;font-size:13px}.menu-link small{display:block;margin-top:3px;color:var(--muted);font-size:11px}
-    .section{max-width:1140px;margin:auto;padding:58px clamp(14px,4vw,32px)}
-    .hero{padding-top:64px;padding-bottom:28px}
-    .eyebrow{color:var(--accent);font-size:11px;font-weight:900;letter-spacing:.14em}
-    .hero h1{max-width:930px;margin:12px 0 17px;font-size:clamp(46px,7vw,78px);line-height:.98;letter-spacing:-.055em}
-    .accent{color:var(--accent)}
-    .hero>p{max-width:760px;color:var(--muted);font-size:17px;line-height:1.6}
-    .tool-shell{display:grid;grid-template-columns:310px minmax(0,1fr);gap:16px;align-items:start;min-width:0}.tool-shell>*{min-width:0}
-    .panel{min-width:0;width:100%;border:1px solid var(--border);border-radius:22px;background:rgba(12,25,42,.84);box-shadow:var(--shadow);padding:21px}
-    .panel h2,.panel h3{margin-top:0}
-    .field{display:block;margin-bottom:14px}.field span{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}
-    .postcode-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;min-width:0}
-    input{min-width:0;width:100%;border:1px solid var(--border);border-radius:11px;background:#081525;color:var(--text);padding:12px;text-transform:uppercase}
-    .primary{max-width:100%;white-space:normal;border:0;border-radius:11px;padding:12px 14px;background:var(--accent);color:#061a12;font-weight:900;cursor:pointer}
-    .primary:disabled{opacity:.45}
-    .quick-locations{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-    .quick-locations button{border:1px solid var(--border);border-radius:999px;padding:7px 9px;background:rgba(255,255,255,.02);color:var(--muted);font-size:10px;cursor:pointer}
-    .now-card{margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.018)}
-    .now-card span{display:block;color:var(--muted);font-size:10px}.now-card strong{display:block;margin-top:5px;font-size:29px}
-    .now-index{display:inline-flex!important;margin-top:8px;padding:5px 8px;border-radius:999px;background:rgba(95,224,167,.08);color:var(--accent)!important;font-weight:850}
-    .hero-result{position:relative;overflow:hidden;min-height:270px;background:
-      radial-gradient(circle at 82% 35%,rgba(95,224,167,.14),transparent 19rem),rgba(12,25,42,.84)}
-    .result-badges{display:flex;gap:7px;flex-wrap:wrap}.pill{display:inline-flex;padding:6px 9px;border-radius:999px;background:rgba(95,224,167,.08);border:1px solid rgba(95,224,167,.17);color:var(--accent);font-size:9px;font-weight:900}
-    .pill.blue{background:rgba(103,183,255,.07);border-color:rgba(103,183,255,.17);color:var(--blue)}
-    .hero-result h2{max-width:690px;margin:17px 0 8px;font-size:clamp(31px,5vw,52px);line-height:1.02;letter-spacing:-.045em}
-    .hero-result p{max-width:670px;color:var(--muted);line-height:1.55}
-    .best-window{display:inline-flex;align-items:baseline;gap:9px;margin-top:12px;padding:13px 15px;border-radius:13px;background:var(--accent);color:#061a12}
-    .best-window strong{font-size:22px}.best-window span{font-size:11px;font-weight:750}
-    .timeline-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:16px}
-    .timeline-head p{margin:4px 0 0;color:var(--muted);font-size:11px}
-    .timeline{display:grid;grid-template-columns:repeat(8,minmax(82px,1fr));gap:7px;overflow-x:auto;padding-bottom:6px}
-    .slot{min-width:82px;padding:12px 9px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.018)}
-    .slot.best{border-color:rgba(95,224,167,.58);background:rgba(95,224,167,.07)}
-    .slot-time{display:block;color:var(--muted);font-size:9px;margin-bottom:8px}.slot strong{font-size:16px}.slot small{display:block;color:var(--muted);font-size:9px;margin-top:4px}
-    .bar{height:5px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:9px;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent);border-radius:inherit}
-    .appliances{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
-    .appliance{padding:13px;border:1px solid var(--border);border-radius:13px}.appliance span{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.appliance strong{font-size:12px}
-    .method-note{margin-top:15px;padding:12px;border-radius:12px;border:1px solid rgba(103,183,255,.14);background:rgba(103,183,255,.035);color:var(--muted);font-size:10px;line-height:1.5}
-    .empty{padding:45px 12px;text-align:center;color:var(--muted)}
+    body{margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 86% 7%,rgba(95,224,167,.14),transparent 29rem),var(--bg);min-height:100vh}
+    button,select{font:inherit}.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;padding:14px clamp(14px,4vw,54px);background:rgba(7,17,31,.93);border-bottom:1px solid var(--border);backdrop-filter:blur(16px)}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:850;margin-right:auto}.mark{width:38px;height:38px;border-radius:11px;background:var(--accent);color:#062017;display:grid;place-items:center;font-size:11px;font-weight:950}
+    .menu{position:relative}.menu-btn{width:46px;height:46px;border:1px solid var(--border);border-radius:13px;background:var(--panel);display:grid;place-content:center;gap:4px}.menu-btn span{display:block;width:19px;height:2px;background:var(--text)}
+    .drop{position:absolute;right:0;top:55px;width:min(310px,calc(100vw - 28px));padding:10px;border:1px solid var(--border);border-radius:17px;background:#081423;box-shadow:var(--shadow);display:none}.drop.open{display:block}.drop a{display:block;padding:11px;border-radius:11px;color:var(--text);text-decoration:none}.drop strong{display:block;font-size:13px}.drop small{color:var(--muted);font-size:11px}
+    .section{width:100%;max-width:1140px;margin:auto;padding:58px clamp(14px,4vw,32px)}.hero{padding-top:58px;padding-bottom:26px}.eyebrow{color:var(--accent);font-size:11px;font-weight:900;letter-spacing:.14em}.hero h1{max-width:920px;margin:12px 0 17px;font-size:clamp(45px,7vw,76px);line-height:.98;letter-spacing:-.055em}.hero p{max-width:760px;color:var(--muted);font-size:17px;line-height:1.6}.accent{color:var(--accent)}
+    .shell{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}.panel{width:100%;min-width:0;border:1px solid var(--border);border-radius:22px;background:rgba(12,25,42,.86);box-shadow:var(--shadow);padding:21px}.panel h2{margin-top:0}
+    label span{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}select{width:100%;min-width:0;padding:12px;border:1px solid var(--border);border-radius:11px;background:#081525;color:var(--text)}
+    .primary{width:100%;margin-top:11px;padding:13px;border:0;border-radius:11px;background:var(--accent);color:#061a12;font-weight:900}.current{margin-top:17px;padding:14px;border:1px solid var(--border);border-radius:14px}.current span{display:block;color:var(--muted);font-size:10px}.current strong{display:block;margin-top:5px;font-size:28px}.status{display:inline-flex!important;margin-top:8px;padding:5px 8px;border-radius:999px;background:rgba(95,224,167,.08);color:var(--accent)!important;font-weight:850}
+    .result{position:relative;overflow:hidden;background:radial-gradient(circle at 82% 35%,rgba(95,224,167,.14),transparent 19rem),rgba(12,25,42,.86)}.badges{display:flex;gap:7px;flex-wrap:wrap}.pill{display:inline-flex;padding:6px 9px;border:1px solid rgba(95,224,167,.18);border-radius:999px;background:rgba(95,224,167,.07);color:var(--accent);font-size:9px;font-weight:900}.pill.blue{color:var(--blue);border-color:rgba(103,183,255,.18);background:rgba(103,183,255,.06)}
+    .result h2{max-width:700px;margin:17px 0 8px;font-size:clamp(30px,5vw,51px);line-height:1.02;letter-spacing:-.045em}.result p{max-width:680px;color:var(--muted);line-height:1.55}.best-window{display:inline-flex;align-items:baseline;gap:8px;margin-top:11px;padding:12px 14px;border-radius:12px;background:var(--accent);color:#061a12}.best-window strong{font-size:19px}.best-window span{font-size:10px;font-weight:850}
+    .timeline-panel{margin-top:16px}.timeline-head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:14px}.timeline-head p{margin:4px 0 0;color:var(--muted);font-size:11px}.timeline{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px}.slot{flex:0 0 88px;padding:11px 9px;border:1px solid var(--border);border-radius:12px}.slot.best{border-color:rgba(95,224,167,.55);background:rgba(95,224,167,.07)}.slot-time{display:block;color:var(--muted);font-size:9px;margin-bottom:7px}.slot strong{font-size:16px}.slot small{display:block;color:var(--muted);font-size:9px;margin-top:4px}.bar{height:5px;margin-top:8px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
+    .appliances{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:15px}.appliance{padding:12px;border:1px solid var(--border);border-radius:12px}.appliance span{display:block;color:var(--muted);font-size:9px;margin-bottom:5px}.appliance strong{font-size:11px}.source-note{margin-top:14px;color:var(--muted);font-size:10px;line-height:1.5}.stale{color:var(--warn)!important}
     footer{max-width:1140px;margin:auto;padding:28px 32px;color:var(--muted);font-size:11px;border-top:1px solid var(--border)}
-    @media(max-width:820px){.tool-shell{display:block}.tool-shell>aside{margin-bottom:16px}.appliances{grid-template-columns:1fr}.hero-result{min-height:0}}
-    @media(max-width:540px){.topbar{padding-left:14px;padding-right:14px}.brand{min-width:0}.brand span:last-child{font-size:16px;white-space:nowrap}.section{width:100%;padding-left:14px;padding-right:14px}.hero{padding-top:38px}.hero h1{font-size:42px}.postcode-row{grid-template-columns:1fr}.postcode-row button{width:100%}.panel{padding:17px}.timeline{width:100%;max-width:100%}}
+    @media(max-width:820px){.shell{display:block}.shell>aside{margin-bottom:16px}.appliances{grid-template-columns:1fr}}
+    @media(max-width:540px){.topbar{padding:12px 14px}.brand{font-size:15px}.section{padding-left:14px;padding-right:14px}.hero{padding-top:40px}.hero h1{font-size:42px}.panel{padding:17px}.timeline-head{align-items:start;flex-direction:column}}
   </style>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="index.html"><span class="brand-mark">CO2</span><span>GB Energy Live</span></a>
-    <div class="menu-wrap">
-      <button id="menuBtn" class="menu-btn" aria-label="Open menu"><span></span><span></span><span></span></button>
-      <div id="siteMenu" class="site-menu">
-        <a class="menu-link" href="index.html"><strong>Energy dashboard</strong><small>Live GB energy data</small></a>
-        <a class="menu-link" href="epc.html"><strong>EPC Estimate</strong><small>Home energy estimator</small></a>
-        <a class="menu-link" href="tariffs.html"><strong>Tariff Compare</strong><small>Live tariff comparison</small></a>
-        <a class="menu-link" href="greenest.html"><strong>Greenest Time</strong><small>Best time to use electricity</small></a>
+    <a class="brand" href="index.html"><span class="mark">CO2</span><span>GB Energy Live</span></a>
+    <div class="menu">
+      <button id="menuBtn" class="menu-btn" type="button"><span></span><span></span><span></span></button>
+      <div id="drop" class="drop">
+        <a href="index.html"><strong>Energy dashboard</strong><small>Live GB energy data</small></a>
+        <a href="epc.html"><strong>EPC Estimate</strong><small>Home energy estimator</small></a>
+        <a href="tariffs.html"><strong>Tariff Compare</strong><small>Live tariff comparison</small></a>
+        <a href="greenest.html"><strong>Greenest Time</strong><small>Lowest-carbon electricity windows</small></a>
       </div>
     </div>
   </header>
@@ -92,492 +44,194 @@
     <section class="section hero">
       <p class="eyebrow">CARBON SMART ENERGY</p>
       <h1>Find the <span class="accent">greenest time</span> to use electricity.</h1>
-      <p>Enter the first part of your postcode and we will use NESO's regional carbon intensity forecast to find the lowest-carbon periods over the next 48 hours.</p>
+      <p>Choose your GB region and we'll use the latest cached NESO carbon-intensity forecast to find the lowest-carbon periods over the next 48 hours.</p>
     </section>
 
-    <section class="section" style="padding-top:16px">
-      <div class="tool-shell">
+    <section class="section" style="padding-top:15px">
+      <div class="shell">
         <aside class="panel">
           <h2>Your region</h2>
-          <label class="field">
-            <span>Outward postcode</span>
-            <div class="postcode-row">
-              <input id="postcode" maxlength="4" placeholder="ST13" value="ST13">
-              <button id="loadBtn" class="primary" type="button">Find green times</button>
-            </div>
+          <label>
+            <span>GB electricity region</span>
+            <select id="region">
+              <option value="1">North Scotland</option>
+              <option value="2">South Scotland</option>
+              <option value="3">North West England</option>
+              <option value="4">North East England</option>
+              <option value="5">South Yorkshire</option>
+              <option value="6">North Wales, Merseyside & Cheshire</option>
+              <option value="7">South Wales</option>
+              <option value="8" selected>West Midlands</option>
+              <option value="9">East Midlands</option>
+              <option value="10">East England</option>
+              <option value="11">South West England</option>
+              <option value="12">South England</option>
+              <option value="13">London</option>
+              <option value="14">South East England</option>
+            </select>
           </label>
+          <button id="loadBtn" class="primary" type="button">Show green times</button>
 
-          <div class="quick-locations">
-            <button data-postcode="SW1A">London</button>
-            <button data-postcode="M1">Manchester</button>
-            <button data-postcode="B1">Birmingham</button>
-            <button data-postcode="EH1">Edinburgh</button>
-          </div>
-
-          <div class="now-card">
-            <span>Current regional forecast</span>
+          <div class="current">
+            <span>Current forecast period</span>
             <strong id="currentIntensity">-</strong>
-            <span id="currentIndex" class="now-index">Waiting</span>
+            <span id="currentIndex" class="status">Waiting for data</span>
           </div>
         </aside>
 
         <div>
-          <section class="panel hero-result">
-            <div class="result-badges"><span class="pill">NESO FORECAST</span><span class="pill blue">48 HOURS</span></div>
-            <h2 id="bestHeadline">Find your greenest window</h2>
-            <p id="bestCopy">We'll analyse every half-hour forecast and find the lowest-carbon continuous 3-hour period.</p>
+          <section class="panel result">
+            <div class="badges"><span class="pill">NESO FORECAST</span><span class="pill blue">48 HOURS</span></div>
+            <h2 id="headline">Loading the latest cached forecast...</h2>
+            <p id="copy">Greenest Time reads a local forecast file refreshed by GitHub Actions, so the page no longer needs to call NESO directly from your browser.</p>
             <div id="bestWindow" class="best-window" style="display:none"><strong>-</strong><span>best 3-hour window</span></div>
           </section>
 
-          <section class="panel" style="margin-top:16px">
+          <section class="panel timeline-panel">
             <div class="timeline-head">
-              <div><h2 style="margin:0">Next 24 hours</h2><p id="regionName">Regional forecast</p></div>
-              <span id="updatedText" style="color:var(--muted);font-size:10px">-</span>
+              <div><h2 style="margin:0">Next 24 hours</h2><p id="regionName">Selected region</p></div>
+              <span id="freshness" style="color:var(--muted);font-size:10px">-</span>
             </div>
 
             <div id="timeline" class="timeline">
-              <div class="empty">Enter a postcode to load the forecast.</div>
+              <div style="color:var(--muted)">Loading carbon.json...</div>
             </div>
 
             <div class="appliances">
-              <div class="appliance"><span>Washing machine</span><strong id="washTime">-</strong></div>
-              <div class="appliance"><span>Dishwasher</span><strong id="dishTime">-</strong></div>
-              <div class="appliance"><span>EV / long charge</span><strong id="evTime">-</strong></div>
+              <div class="appliance"><span>Washing machine</span><strong id="wash">-</strong></div>
+              <div class="appliance"><span>Dishwasher</span><strong id="dish">-</strong></div>
+              <div class="appliance"><span>EV / long charge</span><strong id="ev">-</strong></div>
             </div>
 
-            <div class="method-note">Carbon intensity is measured in grams of CO2 per kWh of electricity consumed. Lower is greener. This tool optimises for carbon intensity only; it does not mean electricity will be cheaper during the highlighted period.</div>
+            <div class="source-note">Lower gCO2/kWh is greener. Greenest Time optimises for carbon intensity, not electricity price. Forecast data is sourced from NESO and cached by this site's GitHub Action.</div>
           </section>
         </div>
       </div>
     </section>
   </main>
 
-  <footer>GB Energy Live v1.5.2 - Data from the official NESO Carbon Intensity API</footer>
+  <footer>GB Energy Live v1.5.3 - NESO Carbon Intensity API via GitHub Actions</footer>
 
   <script>
-    const API = "https://api.carbonintensity.org.uk";
-    const postcode = document.getElementById("postcode");
-    const loadBtn = document.getElementById("loadBtn");
-    const timeline = document.getElementById("timeline");
+    const DATA_FILE="data/carbon.json";
+    let carbon=null;
 
-    const cleanPostcode = (v) =>
-      String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
+    const $=id=>document.getElementById(id);
+    const value=r=>Number(r?.forecast);
+    const time=iso=>new Date(iso).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+    const dayTime=iso=>new Date(iso).toLocaleString([], {weekday:"short",hour:"2-digit",minute:"2-digit"});
 
-    const localTime = (iso) =>
-      new Date(iso).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-
-    const localDayTime = (iso) =>
-      new Date(iso).toLocaleString([], {
-        weekday: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-
-    function apiStartTime() {
-      const d = new Date();
-
-      // NESO publishes half-hour settlement periods.
-      d.setUTCSeconds(0, 0);
-      d.setUTCMinutes(d.getUTCMinutes() < 30 ? 0 : 30);
-
-      return d.toISOString().slice(0, 16) + "Z";
-    }
-
-    async function getJson(url) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 12000);
-
-      try {
-        const response = await fetch(url, {
-          signal: controller.signal,
-          cache: "no-store",
-          headers: { Accept: "application/json" }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        return await response.json();
-      } finally {
-        clearTimeout(timer);
+    function bestWindow(rows,count){
+      if(rows.length<count)return null;
+      let best=null;
+      for(let i=0;i<=rows.length-count;i++){
+        const sample=rows.slice(i,i+count);
+        const vals=sample.map(value);
+        if(vals.some(v=>!Number.isFinite(v)))continue;
+        const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+        if(!best||avg<best.avg)best={avg,start:sample[0].from,end:sample[sample.length-1].to,index:i,count};
       }
-    }
-
-    /*
-      Regional responses are nested like:
-
-      data -> region -> data -> half-hour periods
-
-      National responses are:
-
-      data -> half-hour periods
-
-      This recursively finds every object that contains:
-      from + to + intensity.forecast
-    */
-    function collectPeriods(node, inherited = {}, out = []) {
-      if (Array.isArray(node)) {
-        node.forEach((item) => collectPeriods(item, inherited, out));
-        return out;
-      }
-
-      if (!node || typeof node !== "object") return out;
-
-      const meta = {
-        regionid: node.regionid ?? inherited.regionid,
-        shortname: node.shortname ?? inherited.shortname,
-        dnoregion: node.dnoregion ?? inherited.dnoregion
-      };
-
-      if (
-        node.from &&
-        node.to &&
-        node.intensity &&
-        Number.isFinite(Number(node.intensity.forecast))
-      ) {
-        out.push({
-          ...node,
-          ...meta
-        });
-      }
-
-      Object.entries(node).forEach(([key, value]) => {
-        if (
-          key !== "intensity" &&
-          key !== "generationmix" &&
-          (Array.isArray(value) || (value && typeof value === "object"))
-        ) {
-          collectPeriods(value, meta, out);
-        }
-      });
-
-      return out;
-    }
-
-    const forecastValue = (row) => Number(row?.intensity?.forecast);
-    const indexLabel = (row) => String(row?.intensity?.index || "unknown");
-
-    function bestWindow(rows, count) {
-      if (rows.length < count) return null;
-
-      let best = null;
-
-      for (let i = 0; i <= rows.length - count; i += 1) {
-        const sample = rows.slice(i, i + count);
-        const values = sample.map(forecastValue);
-
-        if (values.some((v) => !Number.isFinite(v))) continue;
-
-        const avg =
-          values.reduce((sum, value) => sum + value, 0) / values.length;
-
-        if (!best || avg < best.avg) {
-          best = {
-            avg,
-            start: sample[0].from,
-            end: sample[sample.length - 1].to,
-            index: i,
-            count
-          };
-        }
-      }
-
       return best;
     }
 
-    function formatWindow(window) {
-      if (!window) return "-";
-      return `${localDayTime(window.start)} - ${localTime(window.end)}`;
-    }
+    const fmtWindow=w=>w?`${dayTime(w.start)} - ${time(w.end)}`:"-";
 
-    function render(rows, regionName, sourceLabel) {
-      rows = rows
-        .filter((row) =>
-          row.from &&
-          Number.isFinite(forecastValue(row))
-        )
-        .sort((a, b) => Date.parse(a.from) - Date.parse(b.from));
+    function render(){
+      if(!carbon)return;
+      const id=$("region").value;
+      let region=carbon.regions?.[id];
 
-      if (!rows.length) {
-        throw new Error("No usable forecast periods");
+      if(!region && carbon.national){
+        region={name:"Great Britain (national fallback)",periods:carbon.national};
       }
 
-      const now = rows[0];
-      const best3 = bestWindow(rows, 6);
-      const best2 = bestWindow(rows, 4);
-      const best6 = bestWindow(rows, 12);
-
-      document.getElementById("currentIntensity").textContent =
-        `${forecastValue(now)} gCO2/kWh`;
-
-      document.getElementById("currentIndex").textContent =
-        indexLabel(now);
-
-      document.getElementById("regionName").textContent =
-        regionName || "Great Britain";
-
-      document.getElementById("updatedText").textContent =
-        `${sourceLabel} - ${new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit"
-        })}`;
-
-      if (best3) {
-        document.getElementById("bestHeadline").textContent =
-          `Greenest window: ${localDayTime(best3.start)}`;
-
-        document.getElementById("bestCopy").textContent =
-          `The lowest-carbon continuous 3-hour period averages about ${Math.round(best3.avg)} gCO2/kWh.`;
-
-        const bestWindowEl = document.getElementById("bestWindow");
-        bestWindowEl.style.display = "inline-flex";
-        bestWindowEl.querySelector("strong").textContent =
-          formatWindow(best3);
+      if(!region||!Array.isArray(region.periods)||!region.periods.length){
+        $("headline").textContent="Forecast temporarily unavailable";
+        $("copy").textContent="The latest carbon.json does not contain a usable forecast for this region yet.";
+        $("timeline").innerHTML='<div style="color:var(--muted)">Waiting for the next successful carbon forecast update.</div>';
+        return;
       }
 
-      document.getElementById("washTime").textContent =
-        formatWindow(best2);
+      const rows=region.periods
+        .filter(r=>r.from&&Number.isFinite(value(r)))
+        .sort((a,b)=>Date.parse(a.from)-Date.parse(b.from));
 
-      document.getElementById("dishTime").textContent =
-        formatWindow(best2);
+      const now=rows.find(r=>Date.parse(r.to)>Date.now())||rows[0];
+      const currentIndex=Math.max(0,rows.indexOf(now));
+      const forward=rows.slice(currentIndex);
 
-      document.getElementById("evTime").textContent =
-        formatWindow(best6);
+      const best3=bestWindow(forward,6);
+      const best2=bestWindow(forward,4);
+      const best6=bestWindow(forward,12);
 
-      const day = rows.slice(0, 48);
-      const values = day.map(forecastValue);
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      const range = Math.max(1, max - min);
+      $("currentIntensity").textContent=`${value(now)} gCO2/kWh`;
+      $("currentIndex").textContent=now.index||"forecast";
+      $("regionName").textContent=region.name;
 
-      timeline.innerHTML = day.map((row, index) => {
-        const value = forecastValue(row);
+      if(best3){
+        $("headline").textContent=`Greenest window: ${dayTime(best3.start)}`;
+        $("copy").textContent=`The lowest-carbon continuous 3-hour period averages about ${Math.round(best3.avg)} gCO2/kWh.`;
+        $("bestWindow").style.display="inline-flex";
+        $("bestWindow").querySelector("strong").textContent=fmtWindow(best3);
+      }
 
-        const greenScore = Math.max(
-          8,
-          Math.round((1 - (value - min) / range) * 100)
-        );
+      $("wash").textContent=fmtWindow(best2);
+      $("dish").textContent=fmtWindow(best2);
+      $("ev").textContent=fmtWindow(best6);
 
-        const isBest =
-          best3 &&
-          index >= best3.index &&
-          index < best3.index + best3.count;
+      const updated=Date.parse(carbon.updated||"");
+      const mins=Number.isFinite(updated)?Math.max(0,Math.round((Date.now()-updated)/60000)):null;
+      $("freshness").textContent=mins==null?"Update time unavailable":`Updated ${mins} min ago`;
+      $("freshness").classList.toggle("stale",Boolean(carbon.stale)||mins>90);
 
-        return `
-          <div class="slot${isBest ? " best" : ""}">
-            <span class="slot-time">${localTime(row.from)}</span>
-            <strong>${value}</strong>
-            <small>gCO2/kWh</small>
-            <small>${indexLabel(row)}</small>
-            <div class="bar">
-              <span style="width:${greenScore}%"></span>
-            </div>
-          </div>
-        `;
+      const display=forward.slice(0,48);
+      const vals=display.map(value);
+      const min=Math.min(...vals),max=Math.max(...vals),range=Math.max(1,max-min);
+
+      $("timeline").innerHTML=display.map((r,i)=>{
+        const v=value(r);
+        const green=Math.max(8,Math.round((1-(v-min)/range)*100));
+        const isBest=best3&&i>=best3.index&&i<best3.index+best3.count;
+        return `<div class="slot${isBest?" best":""}">
+          <span class="slot-time">${time(r.from)}</span>
+          <strong>${v}</strong>
+          <small>gCO2/kWh</small>
+          <small>${r.index||"forecast"}</small>
+          <div class="bar"><span style="width:${green}%"></span></div>
+        </div>`;
       }).join("");
     }
 
-    async function regionalByPostcode(pc, start) {
-      const url =
-        `${API}/regional/intensity/${encodeURIComponent(start)}` +
-        `/fw48h/postcode/${encodeURIComponent(pc)}`;
+    async function loadData(){
+      $("headline").textContent="Loading carbon forecast...";
+      try{
+        const response=await fetch(`${DATA_FILE}?t=${Date.now()}`,{cache:"no-store"});
+        if(!response.ok)throw new Error(`carbon.json HTTP ${response.status}`);
+        carbon=await response.json();
 
-      const json = await getJson(url);
-      const rows = collectPeriods(json);
-
-      const topRegion = Array.isArray(json?.data)
-        ? json.data[0]
-        : null;
-
-      if (!rows.length) {
-        throw new Error("No postcode forecast returned");
-      }
-
-      return {
-        rows,
-        regionName:
-          topRegion?.shortname ||
-          rows[0]?.shortname ||
-          `Postcode ${pc}`,
-        source: "Regional forecast"
-      };
-    }
-
-    async function regionalByRegionId(pc, start) {
-      const current = await getJson(
-        `${API}/regional/postcode/${encodeURIComponent(pc)}`
-      );
-
-      const currentRows = collectPeriods(current);
-
-      const topRegion = Array.isArray(current?.data)
-        ? current.data[0]
-        : null;
-
-      const regionId =
-        topRegion?.regionid ??
-        currentRows[0]?.regionid;
-
-      if (!regionId) {
-        throw new Error("Could not resolve region ID");
-      }
-
-      const regionName =
-        topRegion?.shortname ||
-        currentRows[0]?.shortname ||
-        `Postcode ${pc}`;
-
-      const forecast = await getJson(
-        `${API}/regional/intensity/${encodeURIComponent(start)}` +
-        `/fw48h/regionid/${regionId}`
-      );
-
-      const rows = collectPeriods(forecast);
-
-      if (!rows.length) {
-        throw new Error("No region forecast returned");
-      }
-
-      return {
-        rows,
-        regionName,
-        source: "Regional forecast"
-      };
-    }
-
-    async function nationalFallback(start) {
-      const json = await getJson(
-        `${API}/intensity/${encodeURIComponent(start)}/fw48h`
-      );
-
-      const rows = collectPeriods(json);
-
-      if (!rows.length) {
-        throw new Error("No national forecast returned");
-      }
-
-      return {
-        rows,
-        regionName: "Great Britain",
-        source: "National fallback"
-      };
-    }
-
-    async function load() {
-      const pc = cleanPostcode(postcode.value);
-      if (!pc) return;
-
-      postcode.value = pc;
-      loadBtn.disabled = true;
-      loadBtn.textContent = "Loading...";
-
-      timeline.innerHTML =
-        '<div class="empty">Loading NESO carbon forecast...</div>';
-
-      document.getElementById("currentIntensity").textContent = "-";
-      document.getElementById("currentIndex").textContent = "Loading";
-
-      const start = apiStartTime();
-
-      try {
-        let data = null;
-
-        // Attempt 1: official regional postcode forecast.
-        try {
-          data = await regionalByPostcode(pc, start);
-          console.log("Greenest Time: postcode forecast");
-        } catch (error) {
-          console.warn("Postcode forecast failed:", error);
+        if(!carbon.regions&&!carbon.national){
+          throw new Error("carbon.json has not been populated yet");
         }
 
-        // Attempt 2: resolve the postcode first, then query region ID.
-        if (!data) {
-          try {
-            data = await regionalByRegionId(pc, start);
-            console.log("Greenest Time: region ID forecast");
-          } catch (error) {
-            console.warn("Region ID forecast failed:", error);
-          }
-        }
-
-        // Attempt 3: national NESO forecast.
-        if (!data) {
-          try {
-            data = await nationalFallback(start);
-            console.log("Greenest Time: national fallback");
-          } catch (error) {
-            console.warn("National forecast failed:", error);
-          }
-        }
-
-        if (!data) {
-          throw new Error("All NESO forecast routes failed");
-        }
-
-        render(
-          data.rows,
-          data.regionName,
-          data.source
-        );
-
-        if (data.source === "National fallback") {
-          document.getElementById("bestCopy").textContent +=
-            " Regional data was unavailable, so this result uses the GB-wide NESO forecast.";
-        }
-      } catch (error) {
-        console.error("Greenest Time:", error);
-
-        timeline.innerHTML =
-          '<div class="empty">NESO carbon-intensity data is temporarily unavailable. Please try again shortly.</div>';
-
-        document.getElementById("currentIntensity").textContent = "-";
-        document.getElementById("currentIndex").textContent = "Unavailable";
-
-        document.getElementById("bestHeadline").textContent =
-          "Forecast temporarily unavailable";
-
-        document.getElementById("bestCopy").textContent =
-          "The NESO API did not return a usable regional or national forecast. No estimate has been substituted.";
-
-        document.getElementById("bestWindow").style.display = "none";
-      } finally {
-        loadBtn.disabled = false;
-        loadBtn.textContent = "Find green times";
+        render();
+      }catch(error){
+        console.error(error);
+        $("headline").textContent="Waiting for carbon data";
+        $("copy").textContent="Run the new Update carbon forecast GitHub Action once. After it succeeds, this page will populate automatically.";
+        $("currentIntensity").textContent="-";
+        $("currentIndex").textContent="Not loaded";
+        $("timeline").innerHTML='<div style="color:var(--muted)">data/carbon.json has not been populated yet.</div>';
       }
     }
 
-    loadBtn.addEventListener("click", load);
+    $("loadBtn").addEventListener("click",render);
+    $("region").addEventListener("change",render);
 
-    postcode.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") load();
-    });
+    const menuBtn=$("menuBtn"),drop=$("drop");
+    menuBtn.addEventListener("click",e=>{e.stopPropagation();drop.classList.toggle("open")});
+    document.addEventListener("click",e=>{if(!drop.contains(e.target))drop.classList.remove("open")});
 
-    document.querySelectorAll("[data-postcode]").forEach((button) => {
-      button.addEventListener("click", () => {
-        postcode.value = button.dataset.postcode;
-        load();
-      });
-    });
-
-    const menuButton = document.getElementById("menuBtn");
-    const siteMenu = document.getElementById("siteMenu");
-
-    menuButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      siteMenu.classList.toggle("open");
-    });
-
-    document.addEventListener("click", (event) => {
-      if (!siteMenu.contains(event.target)) {
-        siteMenu.classList.remove("open");
-      }
-    });
-
-    load();
+    loadData();
   </script>
 </body>
 </html>
