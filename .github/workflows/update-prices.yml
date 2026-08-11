@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: wholesale-price-update
+  cancel-in-progress: false
+
 jobs:
   update-prices:
     runs-on: ubuntu-latest
@@ -15,6 +19,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -25,13 +31,24 @@ jobs:
         run: node scripts/update-prices.mjs
 
       - name: Commit refreshed prices
+        shell: bash
         run: |
+          set -e
+
           git config user.name "gb-energy-live-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add data/prices.json
+
           if git diff --cached --quiet; then
             echo "No price change to commit"
-          else
-            git commit -m "data: refresh wholesale prices"
-            git push
+            exit 0
           fi
+
+          git commit -m "data: refresh wholesale prices"
+
+          # The branch may have changed while the price job was running.
+          # Rebase our one generated-data commit onto the newest main branch.
+          git pull --rebase origin main
+
+          git push origin HEAD:main
