@@ -1,0 +1,206 @@
+copy">
+        <div class="live-kicker">
+          <span class="live-ring"><span></span></span>
+          <span>HOME ENERGY TOOL</span>
+        </div>
+        <h1>Estimate your home's <span class="accent-text">EPC rating.</span></h1>
+        <p>
+          Answer six simple questions and get a quick EPC-style score, likely rating band,
+          confidence level and the upgrades most likely to improve it.
+        </p>
+      </div>
+
+      <div class="epc-progress-shell" aria-label="Estimator progress">
+        <div class="epc-progress-top">
+          <span id="questionCounter">Question 1 of 6</span>
+          <span id="progressPercent">17%</span>
+        </div>
+        <div class="epc-progress-track">
+          <span id="progressBar" style="width:16.7%"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section epc-workspace">
+      <div class="epc-layout">
+        <div class="epc-question-panel">
+          <form id="epcForm">
+            <div class="epc-step active" data-step="1">
+              <span class="step-number">01</span>
+              <p class="eyebrow">PROPERTY TYPE</p>
+              <h2>What type of home is it?</h2>
+              <p class="step-help">Homes with more exposed external walls generally lose more heat.</p>
+
+              <div class="option-grid">
+                <label class="choice-card">
+                  <input type="radio" name="propertyType" value="flat">
+                  <span><strong>Flat</strong><small>Apartment or maisonette</small></span>
+                </label>
+                <label class="choice-card">
+                  <input type="radio" name="propertyType" value="terrace">
+                  <span><strong>Terraced</strong><small>Mid or end terrace</small></span>
+                </label>
+                <label class="choice-card">
+                  <input type="radio" name="propertyType" value="semi">
+                  <span><strong>Semi-detached</strong><small>One shared wall</small></span>
+                </label>
+                <label class="choice-card">
+                  <input type="radio" name="propertyType" value="detached">
+                  <span><strong>Detached</strong><small>No shared walls</small></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="epc-step" data-step="2">
+              <span class="step-number">02</span>
+              <p class="eyebrow">AGE</p>
+              <h2>Roughly when was it built?</h2>
+              <p class="step-help">Construction standards improved significantly over time.</p>
+
+              <div class="option-grid two-col">
+                <label class="choice-card"><input type="radio" name="age" value="pre1919"><span><strong>Before 1919</strong><small>Usually solid-wall construction</small></span></label>
+                <label class="choice-card"><input type="radio" name="age" value="1919_1975"><span><strong>1919-1975</strong><small>Often unfilled cavity walls</small></span></label>
+                <label class="choice-card"><input type="radio" name="age" value="1976_1990"><span><strong>1976-1990</strong><small>Improving insulation standards</small></span></label>
+                <label class="choice-card"><input type="radio" name="age" value="1991_2005"><span><strong>1991-2005</strong><small>Better thermal standards</small></span></label>
+                <label class="choice-card"><input type="radio" name="age" value="2006plus"><span><strong>2006 or newer</strong><small>Modern building regulations</small></span></label>
+              </div>
+            </div>
+
+            <div class="epc-step" data-step="3">
+              <span class="step-number">03</span>
+              <p class="eyebrow">WALLS</p>
+              <h2>How well insulated are the walls?</h2>
+              <p class="step-help">Wall insulation can make a major difference to heat loss.</p>
+
+              <div class="option-grid two-col">
+                <label class="choice-card"><input type="radio" name="walls" value="none"><span><strong>Little or none</strong><small>Uninsulated walls</small></span></label>
+                <label class="choice-card"><input type="radio" name="walls" value="unknown"><span><strong>Not sure</strong><small>We will use a neutral assumption</small></span></label>
+                <label class="choice-card"><input type="radio" name="walls" value="cavity"><span><strong>Cavity insulated</strong><small>Filled cavity wall</small></span></label>
+                <label class="choice-card"><input type="radio" name="walls" value="solid"><span><strong>Solid-wall insulated</strong><small>Internal or external insulation</small></span></label>
+              </div>
+            </div>
+
+            <div class="epc-step" data-step="4">
+              <span class="step-number">04</span>
+              <p class="eyebrow">ROOF</p>
+              <h2>How much loft or roof insulation is there?</h2>
+              <p class="step-help">If you are unsure, choose the closest visual estimate.</p>
+
+              <div class="option-grid two-col">
+                <label class="choice-card"><input type="radio" name="loft" value="none"><span><strong>None / very little</strong><small>Less than about 50 mm</small></span></label>
+                <label class="choice-card"><input type="radio" name="loft" value="some"><span><strong>Some</strong><small>Around 50-150 mm</small></span></label>
+                <label class="choice-card"><input type="radio" name="loft" value="good"><span><strong>Good</strong><small>Around 150-270 mm</small></span></label>
+                <label class="choice-card"><input type="radio" name="loft" value="excellent"><span><strong>Excellent</strong><small>About 270 mm or more</small></span></label>
+              </div>
+            </div>
+
+            <div class="epc-step" data-step="5">
+              <span class="step-number">05</span>
+              <p class="eyebrow">WINDOWS</p>
+              <h2>What glazing does the home mainly have?</h2>
+              <p class="step-help">Choose the type fitted to most windows.</p>
+
+              <div class="option-grid">
+                <label class="choice-card"><input type="radio" name="windows" value="single"><span><strong>Single glazed</strong><small>Older single-pane windows</small></span></label>
+                <label class="choice-card"><input type="radio" name="windows" value="mixed"><span><strong>Mixed</strong><small>Combination of single and double</small></span></label>
+                <label class="choice-card"><input type="radio" name="windows" value="double"><span><strong>Double glazed</strong><small>Most windows double glazed</small></span></label>
+                <label class="choice-card"><input type="radio" name="windows" value="triple"><span><strong>Triple glazed</strong><small>High-performance glazing</small></span></label>
+              </div>
+            </div>
+
+            <div class="epc-step" data-step="6">
+              <span class="step-number">06</span>
+              <p class="eyebrow">HEATING</p>
+              <h2>What is the main heating system?</h2>
+              <p class="step-help">Heating efficiency has a large influence on energy performance.</p>
+
+              <div class="option-grid two-col">
+                <label class="choice-card"><input type="radio" name="heating" value="electric"><span><strong>Electric heaters</strong><small>Panel/storage/resistance heating</small></span></label>
+                <label class="choice-card"><input type="radio" name="heating" value="oldboiler"><span><strong>Older gas boiler</strong><small>Non-condensing or 15+ years old</small></span></label>
+                <label class="choice-card"><input type="radio" name="heating" value="modernboiler"><span><strong>Modern gas boiler</strong><small>Condensing boiler</small></span></label>
+                <label class="choice-card"><input type="radio" name="heating" value="heatpump"><span><strong>Heat pump</strong><small>Air or ground source</small></span></label>
+              </div>
+            </div>
+          </form>
+
+          <div class="epc-actions">
+            <button id="prevBtn" type="button" class="secondary-btn" disabled>Back</button>
+            <button id="nextBtn" type="button" class="primary-btn" disabled>Continue</button>
+          </div>
+        </div>
+
+        <aside class="epc-side">
+          <div class="epc-preview-card">
+            <p class="eyebrow">LIVE ESTIMATE</p>
+            <div class="mini-epc-scale">
+              <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span>
+            </div>
+            <strong id="previewBand">?</strong>
+            <p id="previewText">Answer the questions to build your estimate.</p>
+          </div>
+
+          <div class="epc-note">
+            <strong>What this is</strong>
+            <p>A quick consumer estimate based on common EPC drivers.</p>
+            <strong>What this is not</strong>
+            <p>An official EPC or SAP/RdSAP assessment.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="epcResult" class="section epc-result hidden">
+      <div class="result-shell">
+        <div class="result-main">
+          <p class="eyebrow">YOUR ESTIMATE</p>
+          <div class="result-heading">
+            <div>
+              <h2>Estimated EPC rating</h2>
+              <p id="resultSummary">Based on your six answers.</p>
+            </div>
+            <div id="resultBadge" class="result-badge">C</div>
+          </div>
+
+          <div class="score-row">
+            <strong id="scoreValue">72</strong>
+            <span>estimated score</span>
+          </div>
+
+          <div class="epc-band-chart" aria-label="Estimated EPC band">
+            <div class="epc-band band-a"><span>A</span><small>92+</small></div>
+            <div class="epc-band band-b"><span>B</span><small>81-91</small></div>
+            <div class="epc-band band-c"><span>C</span><small>69-80</small></div>
+            <div class="epc-band band-d"><span>D</span><small>55-68</small></div>
+            <div class="epc-band band-e"><span>E</span><small>39-54</small></div>
+            <div class="epc-band band-f"><span>F</span><small>21-38</small></div>
+            <div class="epc-band band-g"><span>G</span><small>1-20</small></div>
+          </div>
+
+          <div class="confidence-row">
+            <span>Estimate confidence</span>
+            <strong id="confidenceValue">Medium</strong>
+          </div>
+        </div>
+
+        <aside class="result-side">
+          <p class="eyebrow">BEST NEXT MOVES</p>
+          <h3>What could improve it?</h3>
+          <div id="improvementList" class="improvement-list"></div>
+          <button id="restartBtn" type="button" class="secondary-btn full-btn">Start again</button>
+        </aside>
+      </div>
+
+      <div class="estimate-disclaimer">
+        This tool provides a rough estimate only. An official EPC requires an accredited assessor and a full property assessment.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>GB Energy Live v1.3.0</span>
+    <span>EPC Estimate - consumer guidance tool</span>
+  </footer>
+
+  <script src="epc.js?v=1.3.0"></script>
+</body>
+</html>
