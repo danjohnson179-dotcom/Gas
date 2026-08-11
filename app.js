@@ -59,20 +59,92 @@ function numberFrom(obj, keys) {
 
 function cleanFuelName(name) {
   const raw = String(name || "other")
-    .replaceAll("_", " ")
-    .replaceAll("-", " ")
+    .replaceAll("_", "")
+    .replaceAll("-", "")
+    .replaceAll(" ", "")
     .trim()
     .toLowerCase();
+
+  // Elexon FUELINST includes interconnector codes such as INTFR, INTNED,
+  // INTIFA2, INTELEC, etc. Positive values are imports into GB.
+  if (raw.startsWith("int")) return "imports";
 
   const aliases = {
     ccgt: "gas",
     ocgt: "gas",
-    "fossil gas": "gas",
-    "natural gas": "gas",
-    "wind offshore": "offshore wind",
-    "wind onshore": "onshore wind"
+    gas: "gas",
+    fossilgas: "gas",
+    naturalgas: "gas",
+
+    wind: "wind",
+    windoffshore: "wind",
+    windonshore: "wind",
+
+    nuclear: "nuclear",
+    biomass: "biomass",
+    coal: "coal",
+    oil: "oil",
+
+    hydro: "hydro",
+    hydroelectric: "hydro",
+
+    ps: "pumped storage",
+    pumpedstorage: "pumped storage",
+
+    solar: "solar",
+    other: "other"
   };
-  return aliases[raw] || raw;
+
+  return aliases[raw] || "other";
+}
+
+function displayFuelName(name) {
+  const labels = {
+    wind: "Wind",
+    nuclear: "Nuclear",
+    imports: "Imports",
+    gas: "Gas",
+    biomass: "Biomass",
+    hydro: "Hydro",
+    solar: "Solar",
+    coal: "Coal",
+    oil: "Oil",
+    "pumped storage": "Pumped storage",
+    other: "Other"
+  };
+
+  return labels[name] || "Other";
+}
+
+function aggregateFuelRows(rows) {
+  const totals = new Map();
+
+  for (const row of rows) {
+    const rawName =
+      row.fuelType ||
+      row.psrType ||
+      row.productionType ||
+      row.name;
+
+    const mw = numberFrom(
+      row,
+      ["generation", "currentUsage", "quantity", "mw", "value"]
+    );
+
+    if (!Number.isFinite(mw) || mw <= 0) {
+      // Negative interconnector values represent exports from GB. This card
+      // is a supply mix, so exports are not shown as generation.
+      continue;
+    }
+
+    const key = cleanFuelName(rawName);
+    totals.set(key, (totals.get(key) || 0) + mw);
+  }
+
+  return [...totals.entries()]
+    .map(([name, mw]) => ({ name, mw }))
+    .filter((fuel) => fuel.mw > 0)
+    .sort((a, b) => b.mw - a.mw);
 }
 
 async function loadGeneration() {
@@ -103,15 +175,11 @@ async function loadGeneration() {
     }
   }
 
-  const fuels = rows.map((row) => ({
-    name: cleanFuelName(row.fuelType || row.psrType || row.productionType || row.name),
-    mw: numberFrom(row, ["generation", "currentUsage", "quantity", "mw", "value"]) || 0,
-    pct: numberFrom(row, ["percentage", "currentPercentage", "share"])
-  })).filter((fuel) => fuel.mw > 0);
+  const fuels = aggregateFuelRows(rows);
 
   if (!fuels.length) throw new Error("No generation values");
 
-  state.fuels = fuels.sort((a, b) => b.mw - a.mw);
+  state.fuels = fuels;
   state.generationMW = state.fuels.reduce((sum, fuel) => sum + fuel.mw, 0);
 }
 
@@ -341,13 +409,11 @@ function render() {
     const maxMW = Math.max(...state.fuels.map((fuel) => fuel.mw));
 
     byId("fuelMix").innerHTML = state.fuels.slice(0, 12).map((fuel) => {
-      const pct = Number.isFinite(fuel.pct)
-        ? fuel.pct
-        : (fuel.mw / state.generationMW) * 100;
+      const pct = (fuel.mw / state.generationMW) * 100;
       const width = Math.max(2, Math.min(100, (fuel.mw / maxMW) * 100));
 
       return `<div class="fuel-row">
-        <span class="fuel-name">${fuel.name}</span>
+        <span class="fuel-name">${displayFuelName(fuel.name)}</span>
         <span class="bar"><span style="width:${width}%"></span></span>
         <span class="fuel-value">${pct.toFixed(1)}%</span>
       </div>`;
@@ -367,8 +433,8 @@ function render() {
 
     byId("lowCarbonShare").textContent = `${lowPct.toFixed(0)}%`;
     byId("fossilShare").textContent = `${fossilPct.toFixed(0)}%`;
-    byId("largestSource").textContent = largest.name;
-    byId("mixHeadline").textContent = `${largest.name} is the largest source right now`;
+    byId("largestSource").textContent = displayFuelName(largest.name);
+    byId("mixHeadline").textContent = `${displayFuelName(largest.name)} is the largest source right now`;
     byId("mixExplanation").textContent =
       `${largest.name} is contributing about ${(largest.mw/state.generationMW*100).toFixed(0)}% of the generation shown. ` +
       `Around ${lowPct.toFixed(0)}% is classified as low-carbon.`;
@@ -445,7 +511,7 @@ function answer(question) {
 
   if (/powering|generation|fuel|mix|wind|nuclear|solar/.test(q)) {
     if (!biggest || !state.generationMW) return "Generation data is unavailable.";
-    return `${biggest.name} is the largest source at about ${(biggest.mw/state.generationMW*100).toFixed(0)}%. Total displayed generation is ${fmtGW(state.generationMW)}.`;
+    return `${displayFuelName(biggest.name)} is the largest source at about ${(biggest.mw/state.generationMW*100).toFixed(0)}%. Total displayed supply is ${fmtGW(state.generationMW)}.`;
   }
 
   if (/demand|usage|using|high/.test(q)) {
