@@ -1,14 +1,14 @@
 {
-  "updated": "2026-08-13T19:41:20.961Z",
+  "updated": "2026-08-13T22:23:00.119Z",
   "currency": "GBP",
   "displayUnit": "GBP/MWh",
   "version": "1.1.0",
   "electricity": {
     "status": "ok",
-    "gbpPerMWh": 198.45,
-    "volumeMWh": 4357.25,
+    "gbpPerMWh": 156.16,
+    "volumeMWh": 2099.25,
     "provider": "APXMIDP",
-    "observationTime": "2026-08-13T19:00:00Z",
+    "observationTime": "2026-08-13T22:00:00Z",
     "source": "Elexon Insights Market Index Data",
     "sourceLabel": "Elexon short-term GB market",
     "sourceUrl": "https://bmrs.elexon.co.uk/market-index-prices"
@@ -17,7 +17,7 @@
     "status": "ok",
     "gbpPerMWh": 50.94,
     "pencePerTherm": 149.3,
-    "observationTime": "2026-08-13T19:41:20.960Z",
+    "observationTime": "2026-08-13T22:23:00.119Z",
     "source": "Trading Economics UK Natural Gas benchmark",
     "sourceLabel": "UK NBP gas benchmark",
     "sourceUrl": "https://tradingeconomics.com/commodity/uk-natural-gas",
