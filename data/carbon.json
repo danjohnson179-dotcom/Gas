@@ -1,7 +1,7 @@
 {
   "version": "1.5.4",
-  "updated": "2026-08-20T03:13:27.148Z",
-  "forecastStart": "2026-08-20T03:00Z",
+  "updated": "2026-08-20T05:07:56.364Z",
+  "forecastStart": "2026-08-20T05:00Z",
   "source": "NESO Carbon Intensity API",
   "sourceUrl": "https://api.carbonintensity.org.uk/",
   "stale": true,
@@ -11,81 +11,45 @@
   "regions": null,
   "national": [
     {
-      "from": "2026-08-20T02:30Z",
-      "to": "2026-08-20T03:00Z",
-      "forecast": 181,
-      "actual": 184,
-      "index": "high",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-08-20T03:00Z",
-      "to": "2026-08-20T03:30Z",
-      "forecast": 174,
-      "actual": null,
-      "index": "high",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-08-20T03:30Z",
-      "to": "2026-08-20T04:00Z",
-      "forecast": 169,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-08-20T04:00Z",
-      "to": "2026-08-20T04:30Z",
-      "forecast": 162,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
       "from": "2026-08-20T04:30Z",
       "to": "2026-08-20T05:00Z",
-      "forecast": 158,
+      "forecast": 183,
       "actual": null,
-      "index": "moderate",
+      "index": "high",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T05:00Z",
       "to": "2026-08-20T05:30Z",
-      "forecast": 152,
+      "forecast": 181,
       "actual": null,
-      "index": "moderate",
+      "index": "high",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T05:30Z",
       "to": "2026-08-20T06:00Z",
-      "forecast": 169,
+      "forecast": 178,
       "actual": null,
-      "index": "moderate",
+      "index": "high",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T06:00Z",
       "to": "2026-08-20T06:30Z",
-      "forecast": 167,
+      "forecast": 172,
       "actual": null,
-      "index": "moderate",
+      "index": "high",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T06:30Z",
       "to": "2026-08-20T07:00Z",
-      "forecast": 167,
+      "forecast": 168,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -94,7 +58,7 @@
     {
       "from": "2026-08-20T07:00Z",
       "to": "2026-08-20T07:30Z",
-      "forecast": 156,
+      "forecast": 157,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -112,7 +76,7 @@
     {
       "from": "2026-08-20T08:00Z",
       "to": "2026-08-20T08:30Z",
-      "forecast": 134,
+      "forecast": 131,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -121,7 +85,7 @@
     {
       "from": "2026-08-20T08:30Z",
       "to": "2026-08-20T09:00Z",
-      "forecast": 127,
+      "forecast": 113,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -130,7 +94,7 @@
     {
       "from": "2026-08-20T09:00Z",
       "to": "2026-08-20T09:30Z",
-      "forecast": 119,
+      "forecast": 102,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -139,7 +103,7 @@
     {
       "from": "2026-08-20T09:30Z",
       "to": "2026-08-20T10:00Z",
-      "forecast": 110,
+      "forecast": 90,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -148,25 +112,25 @@
     {
       "from": "2026-08-20T10:00Z",
       "to": "2026-08-20T10:30Z",
-      "forecast": 101,
+      "forecast": 85,
       "actual": null,
-      "index": "moderate",
+      "index": "low",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T10:30Z",
       "to": "2026-08-20T11:00Z",
-      "forecast": 93,
+      "forecast": 80,
       "actual": null,
-      "index": "moderate",
+      "index": "low",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T11:00Z",
       "to": "2026-08-20T11:30Z",
-      "forecast": 83,
+      "forecast": 77,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -175,7 +139,7 @@
     {
       "from": "2026-08-20T11:30Z",
       "to": "2026-08-20T12:00Z",
-      "forecast": 74,
+      "forecast": 69,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -184,7 +148,7 @@
     {
       "from": "2026-08-20T12:00Z",
       "to": "2026-08-20T12:30Z",
-      "forecast": 68,
+      "forecast": 66,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -193,7 +157,7 @@
     {
       "from": "2026-08-20T12:30Z",
       "to": "2026-08-20T13:00Z",
-      "forecast": 59,
+      "forecast": 62,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -202,7 +166,7 @@
     {
       "from": "2026-08-20T13:00Z",
       "to": "2026-08-20T13:30Z",
-      "forecast": 53,
+      "forecast": 55,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -211,7 +175,7 @@
     {
       "from": "2026-08-20T13:30Z",
       "to": "2026-08-20T14:00Z",
-      "forecast": 50,
+      "forecast": 56,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -220,7 +184,7 @@
     {
       "from": "2026-08-20T14:00Z",
       "to": "2026-08-20T14:30Z",
-      "forecast": 52,
+      "forecast": 58,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -229,7 +193,7 @@
     {
       "from": "2026-08-20T14:30Z",
       "to": "2026-08-20T15:00Z",
-      "forecast": 53,
+      "forecast": 62,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -238,7 +202,7 @@
     {
       "from": "2026-08-20T15:00Z",
       "to": "2026-08-20T15:30Z",
-      "forecast": 59,
+      "forecast": 69,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -247,7 +211,7 @@
     {
       "from": "2026-08-20T15:30Z",
       "to": "2026-08-20T16:00Z",
-      "forecast": 64,
+      "forecast": 71,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -256,7 +220,7 @@
     {
       "from": "2026-08-20T16:00Z",
       "to": "2026-08-20T16:30Z",
-      "forecast": 70,
+      "forecast": 89,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -265,34 +229,34 @@
     {
       "from": "2026-08-20T16:30Z",
       "to": "2026-08-20T17:00Z",
-      "forecast": 73,
+      "forecast": 101,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T17:00Z",
       "to": "2026-08-20T17:30Z",
-      "forecast": 82,
+      "forecast": 108,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T17:30Z",
       "to": "2026-08-20T18:00Z",
-      "forecast": 85,
+      "forecast": 118,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T18:00Z",
       "to": "2026-08-20T18:30Z",
-      "forecast": 91,
+      "forecast": 131,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -301,7 +265,7 @@
     {
       "from": "2026-08-20T18:30Z",
       "to": "2026-08-20T19:00Z",
-      "forecast": 96,
+      "forecast": 133,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -310,7 +274,7 @@
     {
       "from": "2026-08-20T19:00Z",
       "to": "2026-08-20T19:30Z",
-      "forecast": 95,
+      "forecast": 141,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -319,7 +283,7 @@
     {
       "from": "2026-08-20T19:30Z",
       "to": "2026-08-20T20:00Z",
-      "forecast": 99,
+      "forecast": 142,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -328,7 +292,7 @@
     {
       "from": "2026-08-20T20:00Z",
       "to": "2026-08-20T20:30Z",
-      "forecast": 97,
+      "forecast": 143,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -337,7 +301,7 @@
     {
       "from": "2026-08-20T20:30Z",
       "to": "2026-08-20T21:00Z",
-      "forecast": 95,
+      "forecast": 144,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -346,196 +310,196 @@
     {
       "from": "2026-08-20T21:00Z",
       "to": "2026-08-20T21:30Z",
-      "forecast": 89,
+      "forecast": 144,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T21:30Z",
       "to": "2026-08-20T22:00Z",
-      "forecast": 80,
+      "forecast": 139,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T22:00Z",
       "to": "2026-08-20T22:30Z",
-      "forecast": 79,
+      "forecast": 135,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T22:30Z",
       "to": "2026-08-20T23:00Z",
-      "forecast": 78,
+      "forecast": 129,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T23:00Z",
       "to": "2026-08-20T23:30Z",
-      "forecast": 79,
+      "forecast": 128,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-20T23:30Z",
       "to": "2026-08-21T00:00Z",
-      "forecast": 76,
+      "forecast": 127,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T00:00Z",
       "to": "2026-08-21T00:30Z",
-      "forecast": 74,
+      "forecast": 126,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T00:30Z",
       "to": "2026-08-21T01:00Z",
-      "forecast": 73,
+      "forecast": 127,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T01:00Z",
       "to": "2026-08-21T01:30Z",
-      "forecast": 74,
+      "forecast": 121,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T01:30Z",
       "to": "2026-08-21T02:00Z",
-      "forecast": 73,
+      "forecast": 121,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T02:00Z",
       "to": "2026-08-21T02:30Z",
-      "forecast": 75,
+      "forecast": 120,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T02:30Z",
       "to": "2026-08-21T03:00Z",
-      "forecast": 72,
+      "forecast": 121,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T03:00Z",
       "to": "2026-08-21T03:30Z",
-      "forecast": 70,
+      "forecast": 117,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T03:30Z",
       "to": "2026-08-21T04:00Z",
-      "forecast": 71,
+      "forecast": 118,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T04:00Z",
       "to": "2026-08-21T04:30Z",
-      "forecast": 73,
+      "forecast": 120,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T04:30Z",
       "to": "2026-08-21T05:00Z",
-      "forecast": 77,
+      "forecast": 122,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T05:00Z",
       "to": "2026-08-21T05:30Z",
-      "forecast": 78,
+      "forecast": 123,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T05:30Z",
       "to": "2026-08-21T06:00Z",
-      "forecast": 77,
+      "forecast": 120,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T06:00Z",
       "to": "2026-08-21T06:30Z",
-      "forecast": 81,
+      "forecast": 108,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T06:30Z",
       "to": "2026-08-21T07:00Z",
-      "forecast": 79,
+      "forecast": 100,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T07:00Z",
       "to": "2026-08-21T07:30Z",
-      "forecast": 80,
+      "forecast": 98,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T07:30Z",
       "to": "2026-08-21T08:00Z",
-      "forecast": 77,
+      "forecast": 80,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -544,7 +508,7 @@
     {
       "from": "2026-08-21T08:00Z",
       "to": "2026-08-21T08:30Z",
-      "forecast": 73,
+      "forecast": 72,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -553,7 +517,7 @@
     {
       "from": "2026-08-21T08:30Z",
       "to": "2026-08-21T09:00Z",
-      "forecast": 68,
+      "forecast": 65,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -571,7 +535,7 @@
     {
       "from": "2026-08-21T09:30Z",
       "to": "2026-08-21T10:00Z",
-      "forecast": 62,
+      "forecast": 63,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -580,7 +544,7 @@
     {
       "from": "2026-08-21T10:00Z",
       "to": "2026-08-21T10:30Z",
-      "forecast": 60,
+      "forecast": 61,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -589,7 +553,7 @@
     {
       "from": "2026-08-21T10:30Z",
       "to": "2026-08-21T11:00Z",
-      "forecast": 61,
+      "forecast": 57,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -607,7 +571,7 @@
     {
       "from": "2026-08-21T11:30Z",
       "to": "2026-08-21T12:00Z",
-      "forecast": 62,
+      "forecast": 59,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -616,7 +580,7 @@
     {
       "from": "2026-08-21T12:00Z",
       "to": "2026-08-21T12:30Z",
-      "forecast": 59,
+      "forecast": 61,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -625,7 +589,7 @@
     {
       "from": "2026-08-21T12:30Z",
       "to": "2026-08-21T13:00Z",
-      "forecast": 62,
+      "forecast": 60,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -634,7 +598,7 @@
     {
       "from": "2026-08-21T13:00Z",
       "to": "2026-08-21T13:30Z",
-      "forecast": 62,
+      "forecast": 63,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -643,7 +607,7 @@
     {
       "from": "2026-08-21T13:30Z",
       "to": "2026-08-21T14:00Z",
-      "forecast": 60,
+      "forecast": 62,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -652,7 +616,7 @@
     {
       "from": "2026-08-21T14:00Z",
       "to": "2026-08-21T14:30Z",
-      "forecast": 60,
+      "forecast": 63,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -661,7 +625,7 @@
     {
       "from": "2026-08-21T14:30Z",
       "to": "2026-08-21T15:00Z",
-      "forecast": 57,
+      "forecast": 63,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -670,7 +634,7 @@
     {
       "from": "2026-08-21T15:00Z",
       "to": "2026-08-21T15:30Z",
-      "forecast": 56,
+      "forecast": 64,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -679,7 +643,7 @@
     {
       "from": "2026-08-21T15:30Z",
       "to": "2026-08-21T16:00Z",
-      "forecast": 61,
+      "forecast": 69,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -688,7 +652,7 @@
     {
       "from": "2026-08-21T16:00Z",
       "to": "2026-08-21T16:30Z",
-      "forecast": 65,
+      "forecast": 83,
       "actual": null,
       "index": "low",
       "regionid": null,
@@ -697,52 +661,52 @@
     {
       "from": "2026-08-21T16:30Z",
       "to": "2026-08-21T17:00Z",
-      "forecast": 70,
+      "forecast": 99,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T17:00Z",
       "to": "2026-08-21T17:30Z",
-      "forecast": 74,
+      "forecast": 102,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T17:30Z",
       "to": "2026-08-21T18:00Z",
-      "forecast": 74,
+      "forecast": 113,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T18:00Z",
       "to": "2026-08-21T18:30Z",
-      "forecast": 83,
+      "forecast": 119,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T18:30Z",
       "to": "2026-08-21T19:00Z",
-      "forecast": 88,
+      "forecast": 127,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T19:00Z",
       "to": "2026-08-21T19:30Z",
-      "forecast": 102,
+      "forecast": 129,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -751,7 +715,7 @@
     {
       "from": "2026-08-21T19:30Z",
       "to": "2026-08-21T20:00Z",
-      "forecast": 112,
+      "forecast": 130,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -760,7 +724,7 @@
     {
       "from": "2026-08-21T20:00Z",
       "to": "2026-08-21T20:30Z",
-      "forecast": 109,
+      "forecast": 140,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -769,7 +733,7 @@
     {
       "from": "2026-08-21T20:30Z",
       "to": "2026-08-21T21:00Z",
-      "forecast": 99,
+      "forecast": 138,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -778,7 +742,7 @@
     {
       "from": "2026-08-21T21:00Z",
       "to": "2026-08-21T21:30Z",
-      "forecast": 96,
+      "forecast": 140,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -787,7 +751,7 @@
     {
       "from": "2026-08-21T21:30Z",
       "to": "2026-08-21T22:00Z",
-      "forecast": 93,
+      "forecast": 141,
       "actual": null,
       "index": "moderate",
       "regionid": null,
@@ -796,81 +760,117 @@
     {
       "from": "2026-08-21T22:00Z",
       "to": "2026-08-21T22:30Z",
-      "forecast": 81,
+      "forecast": 144,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T22:30Z",
       "to": "2026-08-21T23:00Z",
-      "forecast": 82,
+      "forecast": 140,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T23:00Z",
       "to": "2026-08-21T23:30Z",
-      "forecast": 84,
+      "forecast": 136,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-21T23:30Z",
       "to": "2026-08-22T00:00Z",
-      "forecast": 85,
+      "forecast": 133,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-22T00:00Z",
       "to": "2026-08-22T00:30Z",
-      "forecast": 80,
+      "forecast": 129,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-22T00:30Z",
       "to": "2026-08-22T01:00Z",
-      "forecast": 83,
+      "forecast": 131,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-22T01:00Z",
       "to": "2026-08-22T01:30Z",
-      "forecast": 83,
+      "forecast": 129,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-22T01:30Z",
       "to": "2026-08-22T02:00Z",
-      "forecast": 89,
+      "forecast": 121,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     },
     {
       "from": "2026-08-22T02:00Z",
       "to": "2026-08-22T02:30Z",
-      "forecast": 88,
+      "forecast": 120,
       "actual": null,
-      "index": "low",
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-08-22T02:30Z",
+      "to": "2026-08-22T03:00Z",
+      "forecast": 120,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-08-22T03:00Z",
+      "to": "2026-08-22T03:30Z",
+      "forecast": 117,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-08-22T03:30Z",
+      "to": "2026-08-22T04:00Z",
+      "forecast": 114,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-08-22T04:00Z",
+      "to": "2026-08-22T04:30Z",
+      "forecast": 114,
+      "actual": null,
+      "index": "moderate",
       "regionid": null,
       "shortname": null
     }
