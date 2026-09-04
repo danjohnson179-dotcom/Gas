@@ -1,14 +1,14 @@
 {
-  "updated": "2026-09-04T13:37:52.199Z",
+  "updated": "2026-09-04T13:58:39.479Z",
   "currency": "GBP",
   "displayUnit": "GBP/MWh",
   "version": "1.1.0",
   "electricity": {
     "status": "ok",
-    "gbpPerMWh": 14.65,
-    "volumeMWh": 4045.95,
+    "gbpPerMWh": 16.47,
+    "volumeMWh": 4059.3,
     "provider": "APXMIDP",
-    "observationTime": "2026-09-04T13:00:00Z",
+    "observationTime": "2026-09-04T13:30:00Z",
     "source": "Elexon Insights Market Index Data",
     "sourceLabel": "Elexon short-term GB market",
     "sourceUrl": "https://bmrs.elexon.co.uk/market-index-prices"
@@ -22,6 +22,8 @@
     "sourceLabel": "UK NBP gas benchmark",
     "sourceUrl": "https://tradingeconomics.com/commodity/uk-natural-gas",
     "quoteStatus": "Public benchmark page",
-    "conversion": "GBP/MWh = (pencePerTherm / 100) / 0.029307107"
+    "conversion": "GBP/MWh = (pencePerTherm / 100) / 0.029307107",
+    "stale": true,
+    "refreshWarning": "Trading Economics UK Natural Gas benchmark: https://tradingeconomics.com/commodity/uk-natural-gas returned HTTP 405 | MarketWatch ICE UK Natural Gas continuous contract: https://www.marketwatch.com/investing/future/gwm00?countrycode=uk returned HTTP 401"
   }
 }
