@@ -1,7 +1,7 @@
 {
   "version": "1.5.4",
-  "updated": "2026-09-06T03:16:43.338Z",
-  "forecastStart": "2026-09-06T03:00Z",
+  "updated": "2026-09-06T03:42:56.061Z",
+  "forecastStart": "2026-09-06T03:30Z",
   "source": "NESO Carbon Intensity API",
   "sourceUrl": "https://api.carbonintensity.org.uk/",
   "stale": true,
@@ -10,15 +10,6 @@
   ],
   "regions": null,
   "national": [
-    {
-      "from": "2026-09-06T02:30Z",
-      "to": "2026-09-06T03:00Z",
-      "forecast": 108,
-      "actual": 74,
-      "index": "low",
-      "regionid": null,
-      "shortname": null
-    },
     {
       "from": "2026-09-06T03:00Z",
       "to": "2026-09-06T03:30Z",
