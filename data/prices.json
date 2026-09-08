@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-08T14:49:56.430Z",
+  "updated": "2026-09-08T15:03:39.258Z",
   "currency": "GBP",
   "displayUnit": "GBP/MWh",
   "version": "1.1.0",
@@ -15,9 +15,9 @@
   },
   "gas": {
     "status": "ok",
-    "gbpPerMWh": 64.34,
-    "pencePerTherm": 188.57,
-    "observationTime": "2026-09-08T14:49:56.429Z",
+    "gbpPerMWh": 64.33,
+    "pencePerTherm": 188.53,
+    "observationTime": "2026-09-08T15:03:39.257Z",
     "source": "Trading Economics UK Natural Gas benchmark",
     "sourceLabel": "UK NBP gas benchmark",
     "sourceUrl": "https://tradingeconomics.com/commodity/uk-natural-gas",
