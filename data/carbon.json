@@ -1,7 +1,7 @@
 {
   "version": "1.5.4",
-  "updated": "2026-10-15T21:15:24.622Z",
-  "forecastStart": "2026-10-15T21:00Z",
+  "updated": "2026-10-15T23:46:26.224Z",
+  "forecastStart": "2026-10-15T23:30Z",
   "source": "NESO Carbon Intensity API",
   "sourceUrl": "https://api.carbonintensity.org.uk/",
   "stale": true,
@@ -10,51 +10,6 @@
   ],
   "regions": null,
   "national": [
-    {
-      "from": "2026-10-15T20:30Z",
-      "to": "2026-10-15T21:00Z",
-      "forecast": 176,
-      "actual": null,
-      "index": "high",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-10-15T21:00Z",
-      "to": "2026-10-15T21:30Z",
-      "forecast": 167,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-10-15T21:30Z",
-      "to": "2026-10-15T22:00Z",
-      "forecast": 162,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-10-15T22:00Z",
-      "to": "2026-10-15T22:30Z",
-      "forecast": 153,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-10-15T22:30Z",
-      "to": "2026-10-15T23:00Z",
-      "forecast": 151,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
     {
       "from": "2026-10-15T23:00Z",
       "to": "2026-10-15T23:30Z",
@@ -869,6 +824,51 @@
       "from": "2026-10-17T20:00Z",
       "to": "2026-10-17T20:30Z",
       "forecast": 120,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-10-17T20:30Z",
+      "to": "2026-10-17T21:00Z",
+      "forecast": 122,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-10-17T21:00Z",
+      "to": "2026-10-17T21:30Z",
+      "forecast": 118,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-10-17T21:30Z",
+      "to": "2026-10-17T22:00Z",
+      "forecast": 111,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-10-17T22:00Z",
+      "to": "2026-10-17T22:30Z",
+      "forecast": 108,
+      "actual": null,
+      "index": "moderate",
+      "regionid": null,
+      "shortname": null
+    },
+    {
+      "from": "2026-10-17T22:30Z",
+      "to": "2026-10-17T23:00Z",
+      "forecast": 101,
       "actual": null,
       "index": "moderate",
       "regionid": null,
