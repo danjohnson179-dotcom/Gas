@@ -1,7 +1,7 @@
 {
   "version": "1.5.4",
-  "updated": "2026-11-26T22:54:21.094Z",
-  "forecastStart": "2026-11-26T22:30Z",
+  "updated": "2026-11-27T04:54:15.602Z",
+  "forecastStart": "2026-11-27T04:30Z",
   "source": "NESO Carbon Intensity API",
   "sourceUrl": "https://api.carbonintensity.org.uk/",
   "stale": true,
@@ -10,114 +10,6 @@
   ],
   "regions": null,
   "national": [
-    {
-      "from": "2026-11-26T22:00Z",
-      "to": "2026-11-26T22:30Z",
-      "forecast": 118,
-      "actual": 155,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-26T22:30Z",
-      "to": "2026-11-26T23:00Z",
-      "forecast": 116,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-26T23:00Z",
-      "to": "2026-11-26T23:30Z",
-      "forecast": 113,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-26T23:30Z",
-      "to": "2026-11-27T00:00Z",
-      "forecast": 104,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T00:00Z",
-      "to": "2026-11-27T00:30Z",
-      "forecast": 101,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T00:30Z",
-      "to": "2026-11-27T01:00Z",
-      "forecast": 99,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T01:00Z",
-      "to": "2026-11-27T01:30Z",
-      "forecast": 97,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T01:30Z",
-      "to": "2026-11-27T02:00Z",
-      "forecast": 95,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T02:00Z",
-      "to": "2026-11-27T02:30Z",
-      "forecast": 96,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T02:30Z",
-      "to": "2026-11-27T03:00Z",
-      "forecast": 95,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T03:00Z",
-      "to": "2026-11-27T03:30Z",
-      "forecast": 99,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
-    {
-      "from": "2026-11-27T03:30Z",
-      "to": "2026-11-27T04:00Z",
-      "forecast": 100,
-      "actual": null,
-      "index": "moderate",
-      "regionid": null,
-      "shortname": null
-    },
     {
       "from": "2026-11-27T04:00Z",
       "to": "2026-11-27T04:30Z",
